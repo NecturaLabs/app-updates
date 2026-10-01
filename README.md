@@ -21,7 +21,12 @@ carries only a `User-Agent`; nothing about the user is sent.
 <app>/
   latest.json   # newest stable release (required)
   beta.json     # newest pre-release (optional; apps read it only when the user opts in)
+  install.sh    # one-line installer for Linux and macOS (Canopy)
+  install.ps1   # one-line installer for Windows (Canopy)
 ```
+
+The installers are copied from the app's `packaging/` folder by each stable release; a
+pre-release never replaces them.
 
 ## Manifest format
 
