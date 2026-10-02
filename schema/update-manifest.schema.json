@@ -7,7 +7,8 @@
   "properties": {
     "version": {
       "type": "string",
-      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$"
+      "description": "A build number (git rev-list --count of the build's commit on main, 1 to 9 digits, no leading zero), or the semantic version of a release made before builds were numbered. Builds are ordered by their number; a semantic version is older than every build.",
+      "pattern": "^([1-9][0-9]{0,8}|(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?)$"
     },
     "notes": { "type": "string" },
     "pub_date": { "type": "string", "format": "date-time" },
