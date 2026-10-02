@@ -80,9 +80,9 @@ Usage:
   sh install.sh [options]
 
 Options:
-  --beta           Install the newest build, including pre-releases (the beta channel).
-  --version X      Install version X (for example 0.2.0) instead of the newest one; also the
-                   way to go back to an older version.
+  --beta           Install the newest build, including beta builds (the beta channel).
+  --version N      Install build N (for example 412) instead of the newest one; also the
+                   way to go back to an older build.
   --no-path        Do not create the ~/.local/bin/canopy symlink.
   --uninstall      Remove Canopy: exactly the files this script created. Settings and data stay.
   --purge          With --uninstall: also delete Canopy's settings, logs and caches (asks first).
@@ -95,8 +95,8 @@ Environment:
   XDG_DATA_HOME        Where the desktop entry and icons are registered (Linux).
 
 Running the installed copy of this script, ~/.local/opt/canopy/uninstall.sh, uninstalls.
-Re-running the installer upgrades in place; a failed upgrade keeps the installed version. It
-never replaces a newer installed version with an older one unless --version asks for it.
+Re-running the installer upgrades in place; a failed upgrade keeps the installed build. It
+never replaces a newer installed build with an older one unless --version asks for it.
 EOF
 }
 
@@ -276,41 +276,33 @@ json_flat() {
 
 json_get() { awk -F '\t' -v k="$2" '$1 == k { print $2; exit }' "$1"; }
 
-# Exit 0 when version $1 is newer than $2 (semantic versioning, pre-releases below releases).
-version_gt() {
+# Exit 0 when the dotted number $1 (such as a glibc version, 2.39.0) is greater than $2.
+dotted_gt() {
     awk -v a="$1" -v b="$2" '
-    function isnum(x) { return x ~ /^[0-9]+$/ }
-    function cmpid(x, y) {
-        if (isnum(x) && isnum(y)) return (x + 0 > y + 0) - (x + 0 < y + 0)
-        if (isnum(x)) return -1
-        if (isnum(y)) return 1
-        return (x > y) - (x < y)
-    }
-    function cmp(x, y,    xc, yc, xp, yp, xs, ys, nx, ny, k, r) {
-        xc = x; xp = ""; if (index(x, "-")) { xc = substr(x, 1, index(x, "-") - 1); xp = substr(x, index(x, "-") + 1) }
-        yc = y; yp = ""; if (index(y, "-")) { yc = substr(y, 1, index(y, "-") - 1); yp = substr(y, index(y, "-") + 1) }
-        nx = split(xc, xs, "."); ny = split(yc, ys, ".")
+    function cmp(x, y,    xs, ys, nx, ny, k, r) {
+        nx = split(x, xs, "."); ny = split(y, ys, ".")
         for (k = 1; k <= (nx > ny ? nx : ny); k++) {
             r = (xs[k] + 0 > ys[k] + 0) - (xs[k] + 0 < ys[k] + 0)
             if (r) return r
         }
-        if (xp == yp) return 0
-        if (xp == "") return 1
-        if (yp == "") return -1
-        nx = split(xp, xs, "."); ny = split(yp, ys, ".")
-        for (k = 1; k <= nx && k <= ny; k++) { r = cmpid(xs[k], ys[k]); if (r) return r }
-        return (nx > ny) - (nx < ny)
+        return 0
     }
     BEGIN { exit !(cmp(a, b) > 0) }'
 }
 
-# A version like 0.2.0 or 0.3.0-beta.1. The case refuses every other character, newlines
-# included, so the line-based grep below only ever sees one line.
-valid_version() {
+# A build number: one to nine digits, no leading zero. The case refuses every other character,
+# newlines included. Builds are ordered by this integer alone.
+valid_build() {
     case $1 in
-        '' | *[!0-9A-Za-z.-]*) return 1 ;;
+        '' | 0* | *[!0-9]*) return 1 ;;
     esac
-    printf '%s\n' "$1" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'
+    [ "${#1}" -le 9 ]
+}
+
+# "build 412" for a build number; anything else (such as the 0.2.0-beta.1 of an installation made
+# before builds were numbered) as it is. Such a value is older than every build.
+build_label() {
+    if valid_build "$1"; then printf 'build %s' "$1"; else printf '%s' "$1"; fi
 }
 
 # Reads the manifest for channel $1 into $WORK/$1.flat; returns 1 when the channel has none.
@@ -322,7 +314,12 @@ read_channel() {
     fi
     json_flat "$WORK/$1.json" >"$WORK/$1.flat"
     v=$(json_get "$WORK/$1.flat" version)
-    valid_version "$v" || die "the update manifest $1.json names no valid version"
+    if ! valid_build "$v"; then
+        # A manifest from before builds were numbered (a version such as 0.2.0-beta.1) is older
+        # than any build: the beta channel is then treated as not published.
+        if [ "$1" = beta ]; then return 1; fi
+        die "the update manifest $1.json names no valid build number"
+    fi
 }
 
 confirm() {
@@ -583,7 +580,7 @@ cleanup() {
 resolve_release() {
     ext=tar.gz
     if [ -n "$PIN" ]; then
-        valid_version "$PIN" || die "--version $PIN is not a version like 0.2.0 or 0.3.0-beta.1"
+        valid_build "$PIN" || die "--version $PIN is not a build number like 412"
         VERSION=$PIN
     fi
     say "Reading the update manifest"
@@ -595,7 +592,7 @@ resolve_release() {
             v=$(json_get "$WORK/beta.flat" version)
             if [ -n "$PIN" ]; then
                 [ "$v" = "$PIN" ] && use=beta
-            elif version_gt "$v" "$VERSION_LATEST"; then
+            elif [ "$v" -gt "$VERSION_LATEST" ]; then
                 use=beta
             fi
         fi
@@ -604,34 +601,34 @@ resolve_release() {
     if [ -z "$PIN" ] || [ "$PIN" = "$mv" ]; then
         VERSION=$mv
         # Never a silent downgrade: an older version only when --version asks for it.
-        if [ -z "$PIN" ] && valid_version "$OLD_VERSION" && version_gt "$OLD_VERSION" "$VERSION"; then
+        if [ -z "$PIN" ] && valid_build "$OLD_VERSION" && [ "$OLD_VERSION" -gt "$VERSION" ]; then
             chan="stable channel"
             [ "$CHANNEL" = beta ] && chan="beta channel"
-            die "Canopy $OLD_VERSION is installed, which is newer than $VERSION, the newest on the $chan; nothing was changed.
-  To keep getting pre-releases, run the installer with --beta.
-  To install $VERSION anyway, run it with --version $VERSION."
+            die "Canopy build $OLD_VERSION is installed, which is newer than build $VERSION, the newest on the $chan; nothing was changed.
+  To keep getting beta builds, run the installer with --beta.
+  To install build $VERSION anyway, run it with --version $VERSION."
         fi
         ASSET_URL=$(json_get "$WORK/$use.flat" "platforms.$KEY.url")
         ASSET_SHA=$(json_get "$WORK/$use.flat" "platforms.$KEY.sha256")
         if [ -z "$ASSET_URL" ]; then
             keys=$(awk -F '\t' '$1 ~ /^platforms\.[^.]*\.url$/ { sub(/^platforms\./, "", $1); sub(/\.url$/, "", $1); printf "%s ", $1 }' "$WORK/$use.flat")
-            die "Canopy $VERSION has no build for $PRETTY ($KEY) yet. Builds in this release: ${keys:-none}"
+            die "Canopy build $VERSION has no archive for $PRETTY ($KEY) yet. Archives in this build: ${keys:-none}"
         fi
         ASSET=${ASSET_URL##*/}
     else
         # An older or other version: its release's SHA256SUMS gives the checksum.
-        ASSET=canopy-$VERSION-$TARGET.$ext
-        say "Reading the checksums of Canopy $VERSION"
-        fetch "$RELEASES_URL/canopy-v$VERSION/SHA256SUMS" "$WORK/SHA256SUMS" 2>"$WORK/sums.err" ||
-            die "Canopy $VERSION is not published (no $RELEASES_URL/canopy-v$VERSION/SHA256SUMS)"
+        ASSET=canopy-build-$VERSION-$TARGET.$ext
+        say "Reading the checksums of Canopy build $VERSION"
+        fetch "$RELEASES_URL/canopy-build-$VERSION/SHA256SUMS" "$WORK/SHA256SUMS" 2>"$WORK/sums.err" ||
+            die "Canopy build $VERSION is not published (no $RELEASES_URL/canopy-build-$VERSION/SHA256SUMS)"
         ASSET_SHA=$(awk -v f="$ASSET" '{ n = $2; sub(/^\*/, "", n) } n == f { print $1; exit }' "$WORK/SHA256SUMS")
-        [ -n "$ASSET_SHA" ] || die "Canopy $VERSION has no build for $PRETTY ($KEY)"
-        ASSET_URL=$RELEASES_URL/canopy-v$VERSION/$ASSET
+        [ -n "$ASSET_SHA" ] || die "Canopy build $VERSION has no archive for $PRETTY ($KEY)"
+        ASSET_URL=$RELEASES_URL/canopy-build-$VERSION/$ASSET
     fi
     # Only ever download Canopy's own archive from Canopy's own release in the feed repository.
-    [ "$ASSET_URL" = "$RELEASES_URL/canopy-v$VERSION/$ASSET" ] ||
+    [ "$ASSET_URL" = "$RELEASES_URL/canopy-build-$VERSION/$ASSET" ] ||
         die "the manifest points outside Canopy's releases: $ASSET_URL"
-    [ "$ASSET" = "canopy-$VERSION-$TARGET.$ext" ] ||
+    [ "$ASSET" = "canopy-build-$VERSION-$TARGET.$ext" ] ||
         die "unexpected archive name in the manifest: $ASSET"
     printf '%s\n' "$ASSET_SHA" | grep -Eq '^[0-9a-f]{64}$' ||
         die "the manifest has no valid sha256 for $ASSET"
@@ -650,8 +647,8 @@ Nothing was installed. Try again later; if it persists, report it."
     say "Checksum verified (sha256 $got)"
     mkdir -p "$WORK/x"
     tar -xzf "$WORK/$ASSET" -C "$WORK/x" || die "could not unpack $ASSET"
-    SRC=$WORK/x/canopy-$VERSION-$TARGET
-    [ -d "$SRC" ] || die "$ASSET does not contain canopy-$VERSION-$TARGET/"
+    SRC=$WORK/x/canopy-build-$VERSION-$TARGET
+    [ -d "$SRC" ] || die "$ASSET does not contain canopy-build-$VERSION-$TARGET/"
 }
 
 # Builds the new install folder's content in $1 from the unpacked archive.
@@ -881,11 +878,11 @@ install_linux() {
 
     say ""
     if [ -z "$OLD_VERSION" ]; then
-        say "Installed Canopy $VERSION in $ROOT"
+        say "Installed Canopy build $VERSION in $ROOT"
     elif [ "$OLD_VERSION" = "$VERSION" ]; then
-        say "Reinstalled Canopy $VERSION in $ROOT"
+        say "Reinstalled Canopy build $VERSION in $ROOT"
     else
-        say "Updated Canopy $OLD_VERSION -> $VERSION in $ROOT"
+        say "Updated Canopy $(build_label "$OLD_VERSION") -> build $VERSION in $ROOT"
     fi
     if [ "$LINK" = 1 ] && links_to "$LINK_PATH" "$ROOT/bin/canopy"; then
         say "Command:  $LINK_PATH -> $ROOT/bin/canopy"
@@ -958,11 +955,11 @@ install_darwin() {
 
     say ""
     if [ -z "$OLD_VERSION" ]; then
-        say "Installed Canopy $VERSION as $ROOT"
+        say "Installed Canopy build $VERSION as $ROOT"
     elif [ "$OLD_VERSION" = "$VERSION" ]; then
-        say "Reinstalled Canopy $VERSION as $ROOT"
+        say "Reinstalled Canopy build $VERSION as $ROOT"
     else
-        say "Updated Canopy $OLD_VERSION -> $VERSION at $ROOT"
+        say "Updated Canopy $(build_label "$OLD_VERSION") -> build $VERSION at $ROOT"
     fi
     if [ "$LINK" = 1 ] && links_to "$LINK_PATH" "$APP_BIN"; then
         say "Command:  $LINK_PATH -> $APP_BIN"
@@ -1011,7 +1008,7 @@ main() {
         case $1 in
             --beta) CHANNEL=beta ;;
             --version)
-                [ $# -ge 2 ] || die "--version needs a value, for example --version 0.2.0"
+                [ $# -ge 2 ] || die "--version needs a value, for example --version 412"
                 PIN=$2
                 shift
                 ;;
@@ -1157,7 +1154,7 @@ main() {
         # The Linux build needs glibc 2.35 or newer (Ubuntu 22.04, Debian 12, Fedora 36 and later).
         glibc=$(getconf GNU_LIBC_VERSION 2>/dev/null | awk '{print $2}' || true)
         if [ -n "$glibc" ]; then
-            if version_gt "$MIN_GLIBC.0" "$glibc.0"; then
+            if dotted_gt "$MIN_GLIBC.0" "$glibc.0"; then
                 die "Canopy needs glibc $MIN_GLIBC or newer; this system has $glibc"
             fi
         elif ldd --version 2>&1 | grep -qi musl; then
