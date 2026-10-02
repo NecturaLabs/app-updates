@@ -23,9 +23,9 @@
 # without a byte order mark in the ANSI code page). The source is packaging/install.ps1 in
 # NecturaLabs/Canopy; the release workflow publishes it to NecturaLabs/app-updates/canopy/.
 param(
-    # Install the newest build, including pre-releases (the beta channel).
+    # Install the newest build, including beta builds (the beta channel).
     [switch]$Beta,
-    # Install this version (for example 0.2.0) instead of the newest one.
+    # Install this build number (for example 412) instead of the newest one.
     [string]$Version = '',
     # Do not add the install folder to the user PATH.
     [switch]$NoPath,
@@ -113,9 +113,9 @@ With options:
   powershell -ExecutionPolicy Bypass -File install.ps1 [options]
 
 Options:
-  -Beta         Install the newest build, including pre-releases (the beta channel).
-  -Version X    Install version X (for example 0.2.0) instead of the newest one; also the way
-                to go back to an older version.
+  -Beta         Install the newest build, including beta builds (the beta channel).
+  -Version N    Install build N (for example 412) instead of the newest one; also the way
+                to go back to an older build.
   -NoPath       Do not add the install folder to the user PATH.
   -Uninstall    Remove Canopy: exactly what this script created. Settings and data stay.
   -Purge        With -Uninstall: also delete Canopy's settings, logs and caches (asks first).
@@ -126,8 +126,8 @@ Environment:
   CANOPY_INSTALL_DIR   Install folder (default %LOCALAPPDATA%\Programs\Canopy).
 
 "Apps & features" (or the installed uninstall.ps1) also uninstalls. Re-running the installer
-upgrades in place; a failed upgrade keeps the installed version. It never replaces a newer
-installed version with an older one unless -Version asks for it.
+upgrades in place; a failed upgrade keeps the installed build. It never replaces a newer
+installed build with an older one unless -Version asks for it.
 '@
     }
 
@@ -190,42 +190,16 @@ installed version with an older one unless -Version asks for it.
         Fail "too many redirects from $Url"
     }
 
-    function Test-Version([string]$V) {
-        return $V -cmatch '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?\z'
+    # A build number: one to nine digits, no leading zero. Builds are ordered by this integer alone.
+    function Test-Build([string]$V) {
+        return $V -cmatch '^[1-9][0-9]{0,8}\z'
     }
 
-    # Semantic version order: 1 when $A is newer than $B, -1 when older, 0 when equal.
-    function Compare-Version([string]$A, [string]$B) {
-        $pa = $A -split '-', 2
-        $pb = $B -split '-', 2
-        $ca = $pa[0] -split '\.'
-        $cb = $pb[0] -split '\.'
-        for ($i = 0; $i -lt [Math]::Max($ca.Count, $cb.Count); $i++) {
-            $x = 0; $y = 0
-            if ($i -lt $ca.Count) { $x = [long]$ca[$i] }
-            if ($i -lt $cb.Count) { $y = [long]$cb[$i] }
-            if ($x -ne $y) { return [Math]::Sign($x - $y) }
-        }
-        $ra = if ($pa.Count -gt 1) { $pa[1] } else { '' }
-        $rb = if ($pb.Count -gt 1) { $pb[1] } else { '' }
-        if ($ra -eq $rb) { return 0 }
-        if ($ra -eq '') { return 1 }
-        if ($rb -eq '') { return -1 }
-        $ia = $ra -split '\.'
-        $ib = $rb -split '\.'
-        for ($i = 0; $i -lt [Math]::Min($ia.Count, $ib.Count); $i++) {
-            $na = $ia[$i] -match '^[0-9]+\z'
-            $nb = $ib[$i] -match '^[0-9]+\z'
-            if ($na -and $nb) {
-                if ([long]$ia[$i] -ne [long]$ib[$i]) { return [Math]::Sign([long]$ia[$i] - [long]$ib[$i]) }
-            } elseif ($na) { return -1 }
-            elseif ($nb) { return 1 }
-            else {
-                $c = [string]::CompareOrdinal($ia[$i], $ib[$i])
-                if ($c -ne 0) { return [Math]::Sign($c) }
-            }
-        }
-        return [Math]::Sign($ia.Count - $ib.Count)
+    # "build 412" for a build number; anything else (such as the 0.2.0-beta.1 of an installation
+    # made before builds were numbered) as it is. Such a value is older than every build.
+    function Get-BuildLabel([string]$V) {
+        if (Test-Build $V) { return "build $V" }
+        return $V
     }
 
     # The manifest of channel $Name, or $null when that channel has none (beta only).
@@ -240,7 +214,12 @@ installed version with an older one unless -Version asks for it.
             Fail "could not read the update manifest $FeedUrl/$Name.json: $($_.Exception.Message)"
         }
         $m = Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json
-        if (-not (Test-Version ([string]$m.version))) { Fail "the update manifest $Name.json names no valid version" }
+        if (-not (Test-Build ([string]$m.version))) {
+            # A manifest from before builds were numbered is older than any build: the beta
+            # channel is then treated as not published.
+            if ($Name -eq 'beta') { return $null }
+            Fail "the update manifest $Name.json names no valid build number"
+        }
         return $m
     }
 
@@ -580,8 +559,8 @@ installed version with an older one unless -Version asks for it.
             $oldVersion = $oldVersion.Trim()
 
             # Which release.
-            $pin = $Version.TrimStart('v')
-            if ($pin -and -not (Test-Version $pin)) { Fail "-Version $pin is not a version like 0.2.0 or 0.3.0-beta.1" }
+            $pin = $Version.Trim()
+            if ($pin -and -not (Test-Build $pin)) { Fail "-Version $pin is not a build number like 412" }
             Say 'Reading the update manifest'
             $use = Get-Channel 'latest' $work
             if ($Beta -or $pin) {
@@ -589,7 +568,7 @@ installed version with an older one unless -Version asks for it.
                 if ($betaManifest) {
                     if ($pin) {
                         if ($betaManifest.version -eq $pin) { $use = $betaManifest }
-                    } elseif ((Compare-Version $betaManifest.version $use.version) -gt 0) {
+                    } elseif (([long][string]$betaManifest.version) -gt ([long][string]$use.version)) {
                         $use = $betaManifest
                     }
                 }
@@ -597,41 +576,41 @@ installed version with an older one unless -Version asks for it.
             if (-not $pin -or $pin -eq $use.version) {
                 $ver = [string]$use.version
                 # Never a silent downgrade: an older version only when -Version asks for it.
-                if (-not $pin -and (Test-Version $oldVersion) -and (Compare-Version $oldVersion $ver) -gt 0) {
+                if (-not $pin -and (Test-Build $oldVersion) -and ([long]$oldVersion -gt [long]$ver)) {
                     $channel = if ($Beta) { 'beta' } else { 'stable' }
-                    Fail ("Canopy $oldVersion is installed, which is newer than $ver, the newest on the $channel channel; nothing was changed.`n" +
-                        "  To keep getting pre-releases, run the installer with -Beta.`n" +
-                        "  To install $ver anyway, run it with -Version $ver.")
+                    Fail ("Canopy build $oldVersion is installed, which is newer than build $ver, the newest on the $channel channel; nothing was changed.`n" +
+                        "  To keep getting beta builds, run the installer with -Beta.`n" +
+                        "  To install build $ver anyway, run it with -Version $ver.")
                 }
                 $p = Get-Platform $use $key
                 if ($null -eq $p) {
                     $keys = @()
                     if ($use.PSObject.Properties['platforms'] -and $use.platforms) { $keys = @($use.platforms.PSObject.Properties | ForEach-Object { $_.Name }) }
                     $list = if ($keys.Count) { $keys -join ', ' } else { 'none' }
-                    Fail "Canopy $ver has no build for Windows ($key) yet. Builds in this release: $list"
+                    Fail "Canopy build $ver has no archive for Windows ($key) yet. Archives in this build: $list"
                 }
                 $url = [string]$p.url
                 $sha = [string]$p.sha256
                 $asset = $url.Substring($url.LastIndexOf('/') + 1)
             } else {
                 $ver = $pin
-                $asset = "canopy-$ver-$target.zip"
-                Say "Reading the checksums of Canopy $ver"
+                $asset = "canopy-build-$ver-$target.zip"
+                Say "Reading the checksums of Canopy build $ver"
                 $sums = Join-Path $work 'SHA256SUMS'
-                try { Get-File "$ReleasesUrl/canopy-v$ver/SHA256SUMS" $sums } catch [System.ApplicationException] { throw } catch {
-                    Fail "Canopy $ver is not published (no $ReleasesUrl/canopy-v$ver/SHA256SUMS)"
+                try { Get-File "$ReleasesUrl/canopy-build-$ver/SHA256SUMS" $sums } catch [System.ApplicationException] { throw } catch {
+                    Fail "Canopy build $ver is not published (no $ReleasesUrl/canopy-build-$ver/SHA256SUMS)"
                 }
                 $sha = ''
                 foreach ($line in Get-Content -LiteralPath $sums) {
                     $parts = $line -split '\s+', 2
                     if ($parts.Count -eq 2 -and $parts[1].TrimStart('*') -eq $asset) { $sha = $parts[0]; break }
                 }
-                if (-not $sha) { Fail "Canopy $ver has no build for Windows ($key)" }
-                $url = "$ReleasesUrl/canopy-v$ver/$asset"
+                if (-not $sha) { Fail "Canopy build $ver has no archive for Windows ($key)" }
+                $url = "$ReleasesUrl/canopy-build-$ver/$asset"
             }
             # Only ever download Canopy's own archive from Canopy's own release in the feed repository.
-            if ($url -cne "$ReleasesUrl/canopy-v$ver/$asset") { Fail "the manifest points outside Canopy's releases: $url" }
-            if ($asset -cne "canopy-$ver-$target.zip") { Fail "unexpected archive name in the manifest: $asset" }
+            if ($url -cne "$ReleasesUrl/canopy-build-$ver/$asset") { Fail "the manifest points outside Canopy's releases: $url" }
+            if ($asset -cne "canopy-build-$ver-$target.zip") { Fail "unexpected archive name in the manifest: $asset" }
             if ($sha -cnotmatch '^[0-9a-f]{64}\z') { Fail "the manifest has no valid sha256 for $asset" }
 
             # Download and verify.
@@ -645,8 +624,8 @@ installed version with an older one unless -Version asks for it.
             Say "Checksum verified (sha256 $got)"
             $x = Join-Path $work 'x'
             Expand-Archive -LiteralPath $zip -DestinationPath $x
-            $src = Join-Path $x "canopy-$ver-$target"
-            if (-not (Test-Path -LiteralPath (Join-Path $src 'canopy.exe'))) { Fail "$asset has no canopy-$ver-$target\canopy.exe" }
+            $src = Join-Path $x "canopy-build-$ver-$target"
+            if (-not (Test-Path -LiteralPath (Join-Path $src 'canopy.exe'))) { Fail "$asset has no canopy-build-$ver-$target\canopy.exe" }
 
             # Stage the new folder content.
             $new = Join-Path $work 'new'
@@ -754,9 +733,9 @@ installed version with an older one unless -Version asks for it.
             Write-Receipt $Root $receipt
 
             Say ''
-            if (-not $oldVersion) { Say "Installed Canopy $ver in $Root" }
-            elseif ($oldVersion -eq $ver) { Say "Reinstalled Canopy $ver in $Root" }
-            else { Say "Updated Canopy $oldVersion -> $ver in $Root" }
+            if (-not $oldVersion) { Say "Installed Canopy build $ver in $Root" }
+            elseif ($oldVersion -eq $ver) { Say "Reinstalled Canopy build $ver in $Root" }
+            else { Say "Updated Canopy $(Get-BuildLabel $oldVersion) -> build $ver in $Root" }
             if ($receipt.ContainsKey('shortcut')) { Say "Start Menu: $lnk" }
             if (-not $NoPath) { Say "Command:    canopy  (the folder is on your user PATH)" }
             Say 'Remove:     Settings -> Apps -> Installed apps -> Canopy, or uninstall.ps1 in the folder'
