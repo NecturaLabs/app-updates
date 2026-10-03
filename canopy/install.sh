@@ -428,7 +428,10 @@ uninstall_linux() {
     check_root "$ROOT"
     receipt=$ROOT/.canopy-install
     [ -f "$receipt" ] || die "$ROOT has no .canopy-install receipt, so this script did not create it; not touching it"
-    if [ ! -O "$ROOT" ] || [ ! -O "$receipt" ]; then
+    # test -O is not in POSIX, but dash, bash, busybox ash, ksh and macOS sh all have it. A shell
+    # without it makes the test fail, and the negation then refuses the folder instead of skipping.
+    # shellcheck disable=SC3067
+    if ! { [ -O "$ROOT" ] && [ -O "$receipt" ]; }; then
         die "$ROOT or its receipt belongs to another user; not touching it"
     fi
     take_lock "$ROOT/.lock"
