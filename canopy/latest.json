@@ -1,16 +1,16 @@
 {
-  "version": "124",
-  "notes": "### Added\n\n- Show and edit the Git author identity.\n\n### Fixed\n\n- Report refused repositories and undo a half-done clear.",
-  "pub_date": "2026-10-02T20:46:47Z",
-  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-124",
+  "version": "146",
+  "notes": "### Added\n\n- Show author profile pictures cached for twelve hours.\n\n### Fixed\n\n- Stay responsive when the window is on another workspace.\n- Keep the user's files on upgrade and trust no receipt path.\n- Title the author column \"Author\".\n- Keep progress and completion dialogs compact.\n- Improve spacing and navigation across the app.",
+  "pub_date": "2026-10-03T10:21:15Z",
+  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-146",
   "platforms": {
     "linux-aarch64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-124/canopy-build-124-aarch64-unknown-linux-gnu.tar.gz",
-      "sha256": "58a0760f9f198614185e01c43099b8ee8ce08de62aa825f5083123979fc890c6"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-146/canopy-build-146-aarch64-unknown-linux-gnu.tar.gz",
+      "sha256": "64ca048233b2bca48d0d3a08ab0275578ca330b959996d3049b53cb5099c220d"
     },
     "linux-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-124/canopy-build-124-x86_64-unknown-linux-gnu.tar.gz",
-      "sha256": "7f5954c8533baf2255b072d6ffda18fec7ed02deffafbdabf8c24476ec92c006"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-146/canopy-build-146-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "a701770de3eaa9be609da98ab75a7cd63e9a682390e2eb20dcde494580a33151"
     }
   }
 }
