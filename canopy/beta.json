@@ -1,16 +1,16 @@
 {
-  "version": "173",
-  "notes": "### Added\n\n- Download only in folders you trust.\n\n### Fixed\n\n- Refuse to uninstall when the owner check cannot run.\n- Show pictures of authors whose commit changed many files.\n- Keep an author due after a picture lookup was skipped.\n- Author pictures no longer starve pull requests of API calls.\n- Size the file header's controls from how they laid out.\n- Withdraw trust at once and ask again before each download.\n- Check trust at every fetch and keep the Trust chip honest.\n- Read a trusted folder's root-ness without touching the disk and clear the chip after a good diff.\n- Answer the download gate for the list in force and keep trusted folders absolute.\n- Tell a stale refusal from a fresh one and clear the chip when nothing is left to explain.\n- Report a download core stopped as a refusal and drop the chip when the file closes.\n- Keep the environment's repository variables away from git.\n- Drop a refusal that outlives the diff it was for.\n- Let the Downloads off chip explain only refusals.",
-  "pub_date": "2026-10-03T16:13:02Z",
-  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-173",
+  "version": "192",
+  "notes": "### Added\n\n- Draw the illustrations in each theme's own colours.\n- Redraw the app icon around the new logo mark.\n- Add a high-contrast theme and rebalance Neon and Forest.\n- Polish every control, the type scale and empty states.\n- Adapt the layout to small and very large windows.\n\n### Fixed\n\n- Grow a new illustration in even where another just was.\n- Explain an empty diff side only for new or deleted files.\n- Dim the unselected options of segmented controls.",
+  "pub_date": "2026-10-03T21:40:32Z",
+  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-192",
   "platforms": {
     "linux-aarch64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-173/canopy-build-173-aarch64-unknown-linux-gnu.tar.gz",
-      "sha256": "332c0ec146b7e11a371997564d2421ce827fa7008e124bddd7542b1a57a38900"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-192/canopy-build-192-aarch64-unknown-linux-gnu.tar.gz",
+      "sha256": "2f40a1df1fbe7a37e040e3e08c444ff53b957a5281f36bd5219179a47e4f0033"
     },
     "linux-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-173/canopy-build-173-x86_64-unknown-linux-gnu.tar.gz",
-      "sha256": "0ae860d83647d99badf8bcb5e94271611b06fe2adf71f963bdd200b66d850eab"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-192/canopy-build-192-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "0ba013923519cf8dec95d614a5f0e397ea6ea8133badcb0272a029bfb9b8152b"
     }
   }
 }
