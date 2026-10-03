@@ -406,6 +406,17 @@ take_lock() {
 # What the installer puts in the Linux install folder; uninstall removes these and nothing else.
 INSTALLED_ENTRIES="bin share legal LICENSE README.md VERSION uninstall.sh .canopy-install .canopy-install.new"
 
+# True when a receipt's icon entry "<registered copy>|<original>" names exactly the two icons the
+# installer registers: a copy under .../icons/hicolor/ and its original inside this install.
+# A receipt is a file the installer wrote, but uninstall must not trust it with any other path.
+icon_entry_ok() {
+    case $1 in
+        */icons/hicolor/256x256/apps/$APP_ID.png | */icons/hicolor/scalable/apps/$APP_ID.svg) ;;
+        *) return 1 ;;
+    esac
+    [ "$2" = "$ROOT/share/icons/hicolor/${1##*/icons/hicolor/}" ]
+}
+
 uninstall_linux() {
     if [ ! -e "$ROOT" ] && [ ! -L "$ROOT" ]; then
         say "Canopy is not installed in $ROOT; nothing to remove."
@@ -417,6 +428,9 @@ uninstall_linux() {
     check_root "$ROOT"
     receipt=$ROOT/.canopy-install
     [ -f "$receipt" ] || die "$ROOT has no .canopy-install receipt, so this script did not create it; not touching it"
+    if [ ! -O "$ROOT" ] || [ ! -O "$receipt" ]; then
+        die "$ROOT or its receipt belongs to another user; not touching it"
+    fi
     take_lock "$ROOT/.lock"
     recorded=$(sed -n 's/^root=//p' "$receipt" | head -n 1)
     if [ -n "$recorded" ] && [ "$recorded" != "$ROOT" ]; then
@@ -427,20 +441,28 @@ uninstall_linux() {
         case $line in
             link=*)
                 f=${line#link=}
-                if links_to "$f" "$ROOT/bin/canopy"; then rm -f -- "$f" && say "  removed $f"; fi
+                case $f in
+                    */canopy) if links_to "$f" "$ROOT/bin/canopy"; then rm -f -- "$f" && say "  removed $f"; fi ;;
+                esac
                 ;;
             desktop=*)
                 f=${line#desktop=}
-                if [ -f "$f" ] && [ ! -L "$f" ] && grep -qxF "X-Canopy-Install-Dir=$ROOT" "$f"; then
-                    rm -f -- "$f" && say "  removed $f"
-                fi
+                case $f in
+                    */applications/$APP_ID.desktop)
+                        if [ -f "$f" ] && [ ! -L "$f" ] && grep -qxF "X-Canopy-Install-Dir=$ROOT" "$f"; then
+                            rm -f -- "$f" && say "  removed $f"
+                        fi
+                        ;;
+                esac
                 ;;
             icon=*)
                 # icon=<registered copy>|<original inside the install folder>
                 pair=${line#icon=}
                 f=${pair%%|*}
                 src=${pair#*|}
-                if [ -f "$f" ] && [ ! -L "$f" ] && cmp -s -- "$f" "$src"; then rm -f -- "$f" && say "  removed $f"; fi
+                if icon_entry_ok "$f" "$src" && [ -f "$f" ] && [ ! -L "$f" ] && cmp -s -- "$f" "$src"; then
+                    rm -f -- "$f" && say "  removed $f"
+                fi
                 ;;
         esac
     done <"$receipt"
@@ -550,8 +572,8 @@ purge() {
         done
     fi
     say ""
-    say "Tokens saved in Settings -> Accounts stay in the system keychain (service"
-    say "\"$APP_ID\"): remove them in Canopy before uninstalling, or with your keychain app."
+    say "Tokens saved in Settings -> Accounts live in tokens.json in Canopy's data folder, so a"
+    say "folder removed above took them with it; Canopy does not use the system keychain yet."
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -708,7 +730,7 @@ install_self() {
 }
 
 # Moves the staged content ($1) into $ROOT, replacing the old version, in two phases: "aside"
-# moves the old entries into .previous.*, "in" moves the staged ones into place. On a failure,
+# moves the old Canopy entries into .previous.*, "in" moves the staged ones into place. On a failure,
 # or an interrupt (cleanup), swap_rollback undoes exactly the phase reached.
 swap_in() {
     new=$1
@@ -718,7 +740,11 @@ swap_in() {
     done >"$SWAP_NAMES"
     SWAP_OLD=$(mktemp -d "$ROOT/.previous.XXXXXX") || return 1
     SWAP_PHASE=aside
-    for e in "$ROOT"/*; do
+    # Only the installer's own entries move aside, never a file the user keeps in the folder. The
+    # receipt (a hidden name) stays until integrate_linux replaces it: it says which icons are ours.
+    for name in $INSTALLED_ENTRIES; do
+        case $name in .*) continue ;; esac
+        e=$ROOT/$name
         [ -e "$e" ] || [ -L "$e" ] || continue
         mv -- "$e" "$SWAP_OLD/" || {
             swap_abort
@@ -832,8 +858,10 @@ link_command() {
             warn "$LINK_PATH already exists and is not this installer's link; left it alone (remove it, then re-run, to get the 'canopy' command)"
             return 0
         fi
-        mkdir -p "$BIN_DIR"
-        ln -sf -- "$1" "$LINK_PATH"
+        if ! { mkdir -p "$BIN_DIR" && ln -sf -- "$1" "$LINK_PATH"; }; then
+            warn "could not create $LINK_PATH; the 'canopy' command was not set up"
+            return 0
+        fi
         if [ -n "${2:-}" ]; then printf 'link=%s\n' "$LINK_PATH" >>"$2"; fi
         case ":${PATH:-}:" in
             *":$BIN_DIR:"*) ;;
