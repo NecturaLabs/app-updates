@@ -1,16 +1,16 @@
 {
-  "version": "124",
-  "notes": "### Added\n\n- Show and edit the Git author identity.\n\n### Fixed\n\n- Report refused repositories and undo a half-done clear.",
-  "pub_date": "2026-10-02T20:46:47Z",
-  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-124",
+  "version": "173",
+  "notes": "### Added\n\n- Download only in folders you trust.\n\n### Fixed\n\n- Refuse to uninstall when the owner check cannot run.\n- Show pictures of authors whose commit changed many files.\n- Keep an author due after a picture lookup was skipped.\n- Author pictures no longer starve pull requests of API calls.\n- Size the file header's controls from how they laid out.\n- Withdraw trust at once and ask again before each download.\n- Check trust at every fetch and keep the Trust chip honest.\n- Read a trusted folder's root-ness without touching the disk and clear the chip after a good diff.\n- Answer the download gate for the list in force and keep trusted folders absolute.\n- Tell a stale refusal from a fresh one and clear the chip when nothing is left to explain.\n- Report a download core stopped as a refusal and drop the chip when the file closes.\n- Keep the environment's repository variables away from git.\n- Drop a refusal that outlives the diff it was for.\n- Let the Downloads off chip explain only refusals.",
+  "pub_date": "2026-10-03T16:13:02Z",
+  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-173",
   "platforms": {
     "linux-aarch64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-124/canopy-build-124-aarch64-unknown-linux-gnu.tar.gz",
-      "sha256": "58a0760f9f198614185e01c43099b8ee8ce08de62aa825f5083123979fc890c6"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-173/canopy-build-173-aarch64-unknown-linux-gnu.tar.gz",
+      "sha256": "332c0ec146b7e11a371997564d2421ce827fa7008e124bddd7542b1a57a38900"
     },
     "linux-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-124/canopy-build-124-x86_64-unknown-linux-gnu.tar.gz",
-      "sha256": "7f5954c8533baf2255b072d6ffda18fec7ed02deffafbdabf8c24476ec92c006"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-173/canopy-build-173-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "0ae860d83647d99badf8bcb5e94271611b06fe2adf71f963bdd200b66d850eab"
     }
   }
 }
