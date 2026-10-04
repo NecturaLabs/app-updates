@@ -1,16 +1,16 @@
 {
-  "version": "192",
-  "notes": "### Added\n\n- Draw the illustrations in each theme's own colours.\n- Redraw the app icon around the new logo mark.\n- Add a high-contrast theme and rebalance Neon and Forest.\n- Polish every control, the type scale and empty states.\n- Adapt the layout to small and very large windows.\n\n### Fixed\n\n- Grow a new illustration in even where another just was.\n- Explain an empty diff side only for new or deleted files.\n- Dim the unselected options of segmented controls.",
-  "pub_date": "2026-10-03T21:40:32Z",
-  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-192",
+  "version": "253",
+  "notes": "### Added\n\n- Remove the open-source licences screen from the app.\n- Follow the lists with the composer and give a clean tree a home.\n\n### Fixed\n\n- Fit drop-downs to their dialog and give them the app's caret.\n- Show git's own error when it stops before reading its input.\n- Give the checks list the same caret as other expanders.\n- Show the whole rail of the diff's context-lines slider.\n- Keep scrollbar handles long enough to see and grab.\n- Keep settings text clear of the scrollbar and links whole.\n- Size every standalone icon from one scale.\n- Retry and widen the cleanup of the old scalable icon.\n- Name the custom-drawn rows and buttons for screen readers.\n- Register the one icon without a single-item loop.\n- Drop the third-party credits from the About dialog.\n- Show the git version in About instead of the status bar.\n- Say what Pop does and which stash it applies.\n- Mark untracked files with U instead of git's question mark.\n- Show the summary length only once there is a summary.\n- Give the diff options a title, a clear value and a segmented whitespace choice.\n- Tidy Settings: theme cards, privacy text, keyboard list, fields.\n- Show a new or deleted file as one column in side-by-side mode.\n- Soften the tint of a wholly new or deleted file.\n- Make Stage hunk the primary action and Discard a quiet ghost.\n- Drop the language label from the diff header.\n- Fade a line that runs past the pane edge.\n- Label discard-all away from Stage and hide empty change lists.\n- Stop marking the crash-report reassurance with a red cross.\n- Make destructive confirmations a solid danger button.\n- Say why Commit is disabled and draw it clearly disabled.\n- Label the credential field and call a key passphrase unlocking.\n- Show example values and the reason Save is disabled in the identity dialog.\n- Name the current branch in the merge and rebase choices.\n- Put the broader trust choice behind a warning in the trust dialog.\n- Make Check for updates the one action in the About dialog.\n\n### Changed\n\n- List the merge dialog's branches only while its menu is open.",
+  "pub_date": "2026-10-04T09:32:49Z",
+  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-253",
   "platforms": {
     "linux-aarch64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-192/canopy-build-192-aarch64-unknown-linux-gnu.tar.gz",
-      "sha256": "2f40a1df1fbe7a37e040e3e08c444ff53b957a5281f36bd5219179a47e4f0033"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-253/canopy-build-253-aarch64-unknown-linux-gnu.tar.gz",
+      "sha256": "bff14c82aaf8a03fd15dc66804854d2cb1830553c69dc9f0c31fc55570c32200"
     },
     "linux-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-192/canopy-build-192-x86_64-unknown-linux-gnu.tar.gz",
-      "sha256": "0ba013923519cf8dec95d614a5f0e397ea6ea8133badcb0272a029bfb9b8152b"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-253/canopy-build-253-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "da060cfc90429973d1aace10159f66bdee0b13bac7d4aa1a9f4a5726bc5c4bef"
     }
   }
 }
