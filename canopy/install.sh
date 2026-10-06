@@ -681,7 +681,7 @@ stage_linux() {
     new=$1
     [ -f "$SRC/canopy" ] || die "$ASSET has no canopy binary"
     mkdir -p "$new/bin" "$new/share/applications" "$new/share/metainfo" \
-        "$new/share/icons/hicolor/256x256/apps" "$new/share/icons/hicolor/scalable/apps"
+        "$new/share/icons/hicolor/256x256/apps"
     cp "$SRC/canopy" "$new/bin/canopy"
     chmod 755 "$new/bin/canopy"
     for f in README.md LICENSE; do
@@ -706,7 +706,6 @@ stage_linux() {
     fi
     if [ -f "$SRC/$APP_ID.metainfo.xml" ]; then cp "$SRC/$APP_ID.metainfo.xml" "$new/share/metainfo/"; fi
     if [ -f "$SRC/$APP_ID.png" ]; then cp "$SRC/$APP_ID.png" "$new/share/icons/hicolor/256x256/apps/"; fi
-    if [ -f "$SRC/$APP_ID.svg" ]; then cp "$SRC/$APP_ID.svg" "$new/share/icons/hicolor/scalable/apps/"; fi
     printf '%s\n' "$VERSION" >"$new/VERSION"
     install_self "$new/uninstall.sh"
 }
@@ -828,27 +827,37 @@ integrate_linux() {
             warn "could not write $entry"
         fi
     fi
-    for rel in "256x256/apps/$APP_ID.png" "scalable/apps/$APP_ID.svg"; do
-        src=$ROOT/share/icons/hicolor/$rel
-        [ -f "$src" ] || continue
-        dst=$DATA_HOME/icons/hicolor/$rel
-        if [ -L "$dst" ]; then
-            warn "$dst is a symlink, not this installer's icon; left it alone"
-            continue
+    # Earlier builds also shipped a scalable SVG: remove each copy the old receipt lists, wherever
+    # it was registered. One that cannot be removed stays in the receipt, to be tried again.
+    if [ -f "$receipt" ]; then
+        grep '^icon=' "$receipt" | grep -F "/icons/hicolor/scalable/apps/$APP_ID.svg|" |
+            while IFS= read -r line; do
+                pair=${line#icon=}
+                dst=${pair%%|*}
+                src=${pair#*|}
+                icon_entry_ok "$dst" "$src" || continue
+                if [ -f "$dst" ] && [ ! -L "$dst" ] && ! rm -f -- "$dst" 2>/dev/null; then
+                    warn "could not remove $dst"
+                    printf 'icon=%s|%s\n' "$dst" "$src" >>"$tmp_receipt"
+                fi
+            done
+    fi
+    src=$ROOT/share/icons/hicolor/256x256/apps/$APP_ID.png
+    dst=$DATA_HOME/icons/hicolor/256x256/apps/$APP_ID.png
+    if [ ! -f "$src" ]; then
+        :
+    elif [ -L "$dst" ]; then
+        warn "$dst is a symlink, not this installer's icon; left it alone"
+    elif [ -e "$dst" ] && ! grep -qxF "icon=$dst|$src" "$receipt" 2>/dev/null; then
+        # Someone else's copy; an identical one shows the same icon and needs no warning.
+        if [ ! -f "$dst" ] || ! cmp -s -- "$dst" "$src"; then
+            warn "$dst was not installed by this installer; left it alone"
         fi
-        if [ -e "$dst" ] && ! grep -qxF "icon=$dst|$src" "$receipt" 2>/dev/null; then
-            # Someone else's copy; an identical one shows the same icon and needs no warning.
-            if [ ! -f "$dst" ] || ! cmp -s -- "$dst" "$src"; then
-                warn "$dst was not installed by this installer; left it alone"
-            fi
-            continue
-        fi
-        if mkdir -p "$(dirname "$dst")" && put_file "$src" "$dst"; then
-            printf 'icon=%s|%s\n' "$dst" "$src" >>"$tmp_receipt"
-        else
-            warn "could not write $dst"
-        fi
-    done
+    elif mkdir -p "$(dirname "$dst")" && put_file "$src" "$dst"; then
+        printf 'icon=%s|%s\n' "$dst" "$src" >>"$tmp_receipt"
+    else
+        warn "could not write $dst"
+    fi
     link_command "$ROOT/bin/canopy" "$tmp_receipt"
     mv -f -- "$tmp_receipt" "$receipt"
     refresh_desktop_caches
