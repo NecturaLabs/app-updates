@@ -1,20 +1,20 @@
 {
-  "version": "763",
-  "notes": "### Added\n\n- Keep tab names whole and scroll long tab strips.\n- Mark the item you clicked and branches in other worktrees.\n- Add a notification center and choose which pop up.\n- Show only helpful tooltips by default, with a setting.\n- Redesign branch and tag pills.\n- List worktrees in their own section.\n- Give every ref pill one calm design.\n- Drop the commit information block from commit details.\n- Mark the open worktree with the checked-out check.\n- Make primary and danger buttons tonal.\n- Give a repository without a remote a proper card.\n- Drop the details disclosure from cards.\n- Ask for decisions with named buttons.\n- Check before pulling and use recommended git defaults.\n- Respect your git configuration and pull with one fetch.\n- Colour each ref pill in its graph lane.\n- Recommend rebasing diverged branches and remember everywhere.\n- Give select boxes the look of the controls around them.\n- Cleaner text fields and links.\n- Fill ref pills with their lane colour and a white label.\n- Try white labels on the tonal ref pills.\n\n### Fixed\n\n- Keep the pull request list current after a sync.\n- Keep a submenu open on the way to it.\n- Close the center when its links open something.\n- Keep upstreams and focus the window in the user simulation.\n- Keep links for navigation and make actions buttons.\n- Offer Copy only on failures in the center.\n- Tighten cards in the Dense density.\n- Force push only the current branch and prune per remote.\n- Show git's error when a pull cannot fetch.\n- Say which operations the autostash switch still decides.\n- Let a repository's threads end before Canopy exits.\n- Force push only to the branch's own destination.\n- Close tabs without waiting and wait for threads at exit.\n- Stop crashing when a dialog closes with a screen reader on.\n- Drop the Esc cancels and Esc closes footer hints.\n- Clearer prompts and tighter wording across the app.\n- Answer a pull or delete question in the repository that asked.\n- Give usersim fixtures without an origin the bare clone.",
-  "pub_date": "2026-10-07T04:12:21Z",
-  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-763",
+  "version": "828",
+  "notes": "### Fixed\n\n- Agree the likely-conflict text with the commit count.\n- Name the branch in the force delete question.\n- Stop git's progress being glued to its result.\n- Keep the bare keys working after a button keeps focus.\n- Bring the active tab back when focus leaves the strip.\n- Tell a success in words, not git's chatter.\n- Do not mark a menu's first item after a right click.\n- Focus a row when it is clicked.\n- Keep the tools in place as the counts come and go.\n- Show which button Enter will press.\n- Turn the bell badge danger for an unread error.\n- Say why a button is unavailable at every tooltip level.\n- Keep the longest relative date uncut in Dense.\n- Keep a settings file from enabling tag pruning or pushes.\n- Say when a remote already has an untracked branch.\n- Refuse an invalid initial branch name before creating anything.\n- Name the branch and its destination before a force push.\n- Ask again when the remote moved while you decided.\n- List Shift+F10 in the cheatsheet and keyboard settings.\n- Make a disabled icon button read as disabled.\n- Meet WCAG 2.2 AA in text fields and links.\n- Keep the page still when a theme is chosen.\n- Stop a settings file fetching more often or turning on betas.\n- Force push only the branch the question named.\n- Letters typed into an open list no longer fire shortcuts.\n- Refuse branch names git expands before creating the folder.\n- Do not ask about a moved upstream with nothing new.\n- Name rebase or merge when the remote changed meanwhile.\n- Keep room for the \"99+\" badge so the switcher stays put.\n- Say where Push really sends an untracked branch.\n- Esc closes an open link menu before the reader.\n- Say a merging pull brought everything in.\n- Size the Date column for the widest absolute date.\n- Bring in the commit that was checked, not the newest.\n- Tab meets a reset button before its control.\n- Refuse a first branch name git refuses as it is typed.\n- Place reset buttons beside their control, centred.\n- Show focus on the palette and cheatsheet search.\n- Fall back to main when a saved first branch is invalid.\n- Never reuse a work directory name within a process.",
+  "pub_date": "2026-10-07T05:58:29Z",
+  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-828",
   "platforms": {
     "linux-aarch64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-763/canopy-build-763-aarch64-unknown-linux-gnu.tar.gz",
-      "sha256": "4a08ef8fe502c05449c0f45a968fedc7b649abda6ff73a456d2eefcfff7606d0"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-828/canopy-build-828-aarch64-unknown-linux-gnu.tar.gz",
+      "sha256": "c3ee35f420f13c1c3a4d3b0cb4fca6e16a9eadd0b31cb7adc0b060a213da009f"
     },
     "windows-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-763/canopy-build-763-x86_64-pc-windows-msvc.zip",
-      "sha256": "e9c2e9412a3865db8346ccb35d7d93184bf1dd1085515ce8615f22eb048be588"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-828/canopy-build-828-x86_64-pc-windows-msvc.zip",
+      "sha256": "0fb5f336358f0bf11e93f9555c46b9d39c1ce48290a58839b627af718815eb89"
     },
     "linux-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-763/canopy-build-763-x86_64-unknown-linux-gnu.tar.gz",
-      "sha256": "cbcaa537d250e7414327f64e0e16ad7fe8bac768a454f7b89199c4f56a24075b"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-828/canopy-build-828-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "e61ab0cc61930b7fb647222d9bf1e9c2abda0f20a5d467b75ebc6157e10f20b5"
     }
   }
 }
