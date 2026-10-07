@@ -1,20 +1,20 @@
 {
-  "version": "706",
-  "notes": "### Added\n\n- Add a custom theme and make High contrast a switch.\n- Add High contrast to the theme menu and command palette.\n\n### Fixed\n\n- Keep the chosen side's executable bit on Windows.\n- Keep your settings when a saved choice no longer exists.",
-  "pub_date": "2026-10-06T11:26:32Z",
-  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-706",
+  "version": "763",
+  "notes": "### Added\n\n- Keep tab names whole and scroll long tab strips.\n- Mark the item you clicked and branches in other worktrees.\n- Add a notification center and choose which pop up.\n- Show only helpful tooltips by default, with a setting.\n- Redesign branch and tag pills.\n- List worktrees in their own section.\n- Give every ref pill one calm design.\n- Drop the commit information block from commit details.\n- Mark the open worktree with the checked-out check.\n- Make primary and danger buttons tonal.\n- Give a repository without a remote a proper card.\n- Drop the details disclosure from cards.\n- Ask for decisions with named buttons.\n- Check before pulling and use recommended git defaults.\n- Respect your git configuration and pull with one fetch.\n- Colour each ref pill in its graph lane.\n- Recommend rebasing diverged branches and remember everywhere.\n- Give select boxes the look of the controls around them.\n- Cleaner text fields and links.\n- Fill ref pills with their lane colour and a white label.\n- Try white labels on the tonal ref pills.\n\n### Fixed\n\n- Keep the pull request list current after a sync.\n- Keep a submenu open on the way to it.\n- Close the center when its links open something.\n- Keep upstreams and focus the window in the user simulation.\n- Keep links for navigation and make actions buttons.\n- Offer Copy only on failures in the center.\n- Tighten cards in the Dense density.\n- Force push only the current branch and prune per remote.\n- Show git's error when a pull cannot fetch.\n- Say which operations the autostash switch still decides.\n- Let a repository's threads end before Canopy exits.\n- Force push only to the branch's own destination.\n- Close tabs without waiting and wait for threads at exit.\n- Stop crashing when a dialog closes with a screen reader on.\n- Drop the Esc cancels and Esc closes footer hints.\n- Clearer prompts and tighter wording across the app.\n- Answer a pull or delete question in the repository that asked.\n- Give usersim fixtures without an origin the bare clone.",
+  "pub_date": "2026-10-07T04:12:21Z",
+  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-763",
   "platforms": {
     "linux-aarch64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-706/canopy-build-706-aarch64-unknown-linux-gnu.tar.gz",
-      "sha256": "bedc170c90c79d9ef04bde31224c94c368d8d8edf7d1c46f66f62c27b50b7cf5"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-763/canopy-build-763-aarch64-unknown-linux-gnu.tar.gz",
+      "sha256": "4a08ef8fe502c05449c0f45a968fedc7b649abda6ff73a456d2eefcfff7606d0"
     },
     "windows-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-706/canopy-build-706-x86_64-pc-windows-msvc.zip",
-      "sha256": "000cbaf82e8c11a7630a8ea420fad5e69d0f7739c6d4dce0db783e25a0e4abd0"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-763/canopy-build-763-x86_64-pc-windows-msvc.zip",
+      "sha256": "e9c2e9412a3865db8346ccb35d7d93184bf1dd1085515ce8615f22eb048be588"
     },
     "linux-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-706/canopy-build-706-x86_64-unknown-linux-gnu.tar.gz",
-      "sha256": "48f58a5b972d252522a8007973fc21b8ff833da1e2ab22e79128bda3ac57a93c"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-763/canopy-build-763-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "cbcaa537d250e7414327f64e0e16ad7fe8bac768a454f7b89199c4f56a24075b"
     }
   }
 }
