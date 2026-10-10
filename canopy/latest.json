@@ -1,9 +1,13 @@
 {
   "version": "1140",
   "notes": "### Added\n\n- Indent the rows under their section headers.\n- Open only Branches in a new tab and drop the Remotes header's menu.\n- Tidy a request's action row and drop the credential line.\n- Say what commit signing will do and warn when it would fail.\n\n### Fixed\n\n- Colour the lines in a request's summary line.\n- Group repeated notices and keep the bar off the rows.\n- Open the configuration file git reports, not a relative path.\n- Match gpg.format exactly as git does.\n- Judge a signing key as git does and keep only its label.\n- Say no token when none was sent, not that it was refused.\n- Flag a token as refused only from reads.",
-  "pub_date": "2026-10-10T03:28:28Z",
+  "pub_date": "2026-10-10T03:28:51Z",
   "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1140",
   "platforms": {
+    "linux-aarch64": {
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1140/canopy-build-1140-aarch64-unknown-linux-gnu.tar.gz",
+      "sha256": "86a724dcc025e72a20736ea867ed01a6cb0cb701320d11c9596fef15a2b51bcb"
+    },
     "windows-x86_64": {
       "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1140/canopy-build-1140-x86_64-pc-windows-msvc.zip",
       "sha256": "c99a487675e84de0677189269988d7188502bcb61b5246c800e1898acf880bae"
