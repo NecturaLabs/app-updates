@@ -1,20 +1,16 @@
 {
-  "version": "1116",
-  "notes": "### Added\n\n- Use recommended Git choices and stop following the git config.\n\n### Fixed\n\n- Show the same git settings notice once.\n- Start a button's spinner at the click and fade it in.\n- Label the commit id and its parents in commit details.\n- Show what git does on greyed choices and reset every Git choice.\n- Drop the repository from a notice several share.\n- Left-align the Commit and Parent labels.",
-  "pub_date": "2026-10-10T02:37:34Z",
-  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1116",
+  "version": "1140",
+  "notes": "### Added\n\n- Indent the rows under their section headers.\n- Open only Branches in a new tab and drop the Remotes header's menu.\n- Tidy a request's action row and drop the credential line.\n- Say what commit signing will do and warn when it would fail.\n\n### Fixed\n\n- Colour the lines in a request's summary line.\n- Group repeated notices and keep the bar off the rows.\n- Open the configuration file git reports, not a relative path.\n- Match gpg.format exactly as git does.\n- Judge a signing key as git does and keep only its label.\n- Say no token when none was sent, not that it was refused.\n- Flag a token as refused only from reads.",
+  "pub_date": "2026-10-10T03:28:28Z",
+  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1140",
   "platforms": {
-    "linux-aarch64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1116/canopy-build-1116-aarch64-unknown-linux-gnu.tar.gz",
-      "sha256": "91caba510b1ce93258744bd48e17603bf5a22aa534f644eaf129f9997daf97e2"
-    },
     "windows-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1116/canopy-build-1116-x86_64-pc-windows-msvc.zip",
-      "sha256": "99192945172b02aeabf723c58b81f9ca6bf73d1306ac7802c23f7ea6d6b37846"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1140/canopy-build-1140-x86_64-pc-windows-msvc.zip",
+      "sha256": "c99a487675e84de0677189269988d7188502bcb61b5246c800e1898acf880bae"
     },
     "linux-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1116/canopy-build-1116-x86_64-unknown-linux-gnu.tar.gz",
-      "sha256": "f6b581967b112f943432655a9ee92f38fb09dc0e5aefc022c33067aec981676a"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1140/canopy-build-1140-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "26a6fd564838eb59777ae11d0a2d5a7d803d2f11f2c5649715e05c8871de764e"
     }
   }
 }
