@@ -1,9 +1,13 @@
 {
   "version": "1165",
   "notes": "### Added\n\n- Refresh the open request list on a timer.\n\n### Fixed\n\n- Keep the timed refresh within the host's rate limits.\n- Respect refresh backoff after Git syncs.",
-  "pub_date": "2026-10-10T18:00:01Z",
+  "pub_date": "2026-10-10T18:00:18Z",
   "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1165",
   "platforms": {
+    "linux-aarch64": {
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1165/canopy-build-1165-aarch64-unknown-linux-gnu.tar.gz",
+      "sha256": "27c1d8544ca71f03e633fdd551759b64f1cdb1139a4615eca37bbac7aee920a0"
+    },
     "windows-x86_64": {
       "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1165/canopy-build-1165-x86_64-pc-windows-msvc.zip",
       "sha256": "1a22c385e021d5270a6b6e595b0bef5467bdaae8303293badcb75cdb67463fc8"
