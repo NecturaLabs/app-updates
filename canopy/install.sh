@@ -210,6 +210,9 @@ fetch() {
     fi
 }
 
+# SHA-256 of the scalable icons earlier builds shipped (assets/icon.svg, two revisions).
+LEGACY_SVG_SHA256="e17268f7dde4d77560dbb8d70dec4b06516fb66b56aedc6d0efab3c8c5ed7988 200c6e1098e502edb8563c10bf90d47289cd677bb123b6014909fe33cf911d7e"
+
 sha256_of() {
     if have sha256sum; then
         sha256sum -- "$1" | awk '{print $1}'
@@ -841,6 +844,14 @@ integrate_linux() {
                     printf 'icon=%s|%s\n' "$dst" "$src" >>"$tmp_receipt"
                 fi
             done
+    fi
+    # A copy no receipt lists (a build that rewrote the receipt dropped the line): ours only when
+    # it is byte for byte one of the icons earlier builds shipped, never a custom or linked file.
+    dst=$DATA_HOME/icons/hicolor/scalable/apps/$APP_ID.svg
+    if [ -f "$dst" ] && [ ! -L "$dst" ]; then
+        case " $LEGACY_SVG_SHA256 " in
+            *" $(sha256_of "$dst") "*) rm -f -- "$dst" 2>/dev/null || warn "could not remove $dst" ;;
+        esac
     fi
     src=$ROOT/share/icons/hicolor/256x256/apps/$APP_ID.png
     dst=$DATA_HOME/icons/hicolor/256x256/apps/$APP_ID.png
