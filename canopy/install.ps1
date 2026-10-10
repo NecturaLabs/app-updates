@@ -31,7 +31,8 @@ param(
     [switch]$NoPath,
     # Remove Canopy: exactly what this script created. Settings and data stay.
     [switch]$Uninstall,
-    # With -Uninstall: also delete Canopy's settings, logs and caches (asks first).
+    # With -Uninstall: also delete Canopy's settings, saved hosting tokens (tokens.json),
+    # logs and caches (asks first).
     [switch]$Purge,
     # Do not ask for confirmation (for -Purge).
     [switch]$Yes,
@@ -118,7 +119,8 @@ Options:
                 to go back to an older build.
   -NoPath       Do not add the install folder to the user PATH.
   -Uninstall    Remove Canopy: exactly what this script created. Settings and data stay.
-  -Purge        With -Uninstall: also delete Canopy's settings, logs and caches (asks first).
+  -Purge        With -Uninstall: also delete Canopy's settings, saved hosting tokens
+                (tokens.json), logs and caches (asks first).
   -Yes          Do not ask for confirmation (for -Purge).
   -Help         Show this help.
 
@@ -389,7 +391,7 @@ installed build with an older one unless -Version asks for it.
             Say 'No Canopy settings or data found to purge.'
             return $false
         }
-        Say "-Purge deletes Canopy's settings, logs and caches:"
+        Say "-Purge deletes Canopy's settings, saved hosting tokens (tokens.json), logs and caches:"
         foreach ($d in $delete) { Say "  $d" }
         if (Confirm-Action 'Delete them?') { return $true }
         Say 'Keeping them.'
