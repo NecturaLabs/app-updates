@@ -1,20 +1,16 @@
 {
-  "version": "1165",
-  "notes": "### Added\n\n- Refresh the open request list on a timer.\n\n### Fixed\n\n- Keep the timed refresh within the host's rate limits.\n- Respect refresh backoff after Git syncs.",
-  "pub_date": "2026-10-10T18:00:18Z",
-  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1165",
+  "version": "1200",
+  "notes": "### Added\n\n- A stronger resting well and joined field pairs.\n- One message box for the commit summary and description.\n- Edit Git configuration from Settings.\n- Read a file's history across renames.\n- Read who last changed each line of a file.\n- Show who last changed each line with Blame.\n- Show a file's history across renames.\n- Add a linked worktree on a new or an existing branch.\n- Add a Worktree button and dialog to the top bar (#138).\n\n### Fixed\n\n- Drop Recommended prose from Git setting help.\n- Keep conflict choices when switching between conflicted files.\n- Keep Blame from running repository programs or going stale.\n- Keep file history from downloading and bind it to its tab.\n- Keep focus in the composer after Enter and after a commit.\n- Make Git settings and file history clearer.\n- Say what Use recommended writes and tidy review findings.",
+  "pub_date": "2026-10-11T00:54:15Z",
+  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1200",
   "platforms": {
-    "linux-aarch64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1165/canopy-build-1165-aarch64-unknown-linux-gnu.tar.gz",
-      "sha256": "27c1d8544ca71f03e633fdd551759b64f1cdb1139a4615eca37bbac7aee920a0"
-    },
     "windows-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1165/canopy-build-1165-x86_64-pc-windows-msvc.zip",
-      "sha256": "1a22c385e021d5270a6b6e595b0bef5467bdaae8303293badcb75cdb67463fc8"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1200/canopy-build-1200-x86_64-pc-windows-msvc.zip",
+      "sha256": "7144dcf39aff597dc841e1af5bc6da9bee8cbe2b481be7fc644990e20abd0cbb"
     },
     "linux-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1165/canopy-build-1165-x86_64-unknown-linux-gnu.tar.gz",
-      "sha256": "6cb4a8fe837edbfa6472291561a932809882e6df8b3e70c2c1a94533bf52258a"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1200/canopy-build-1200-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "f34402dec780e5b92a2c093a5f88ebad16ad28e87c7f341b7125266f19c04c27"
     }
   }
 }
