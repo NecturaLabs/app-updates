@@ -1,20 +1,16 @@
 {
-  "version": "1200",
-  "notes": "### Added\n\n- A stronger resting well and joined field pairs.\n- One message box for the commit summary and description.\n- Edit Git configuration from Settings.\n- Read a file's history across renames.\n- Read who last changed each line of a file.\n- Show who last changed each line with Blame.\n- Show a file's history across renames.\n- Add a linked worktree on a new or an existing branch.\n- Add a Worktree button and dialog to the top bar (#138).\n\n### Fixed\n\n- Drop Recommended prose from Git setting help.\n- Keep conflict choices when switching between conflicted files.\n- Keep Blame from running repository programs or going stale.\n- Keep file history from downloading and bind it to its tab.\n- Keep focus in the composer after Enter and after a commit.\n- Make Git settings and file history clearer.\n- Say what Use recommended writes and tidy review findings.",
-  "pub_date": "2026-10-11T00:55:00Z",
-  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1200",
+  "version": "1279",
+  "notes": "### Added\n\n- Ask before amending a commit that is already pushed.\n- State the outcome first in the repository hosting block.\n- Fetch the request list one page at a time.\n- Load more requests on demand.\n- Read the signed-in gh or glab token.\n- Use the signed-in gh or glab for pull and merge requests.\n- Search history for changed text with the pickaxe.\n- Search the history for changed text.\n- Search requests on the host.\n- Search and filter requests that are not loaded.\n- Quieter text fields and separate commit subject and body.\n- Pin the commit box and quiet the Changes page.\n- Load the next page when the list scrolls to its end.\n\n### Fixed\n\n- Select the row a context menu acts on when right-clicking.\n- Read again when the kernel interrupts a wait for a response.\n- Write the hosting status as plural sentences.\n- End the wait only on the page that was asked for.\n- Keep repository diff programs and the searched text out of history search.\n- Keep the token out of the Debug output of a resolved credential.\n- Read the CLI sign-in per account and bound its output.\n- Say which source an account's token comes from.\n- Keep the date whole in change search results.\n- Scroll a link Tab reaches into view in the reader.\n- Stop asking for a token when the host is unreachable.\n- Cut redundant markers and copy from the settings pages.\n- Show the recommended value of every setting.\n- Hide unprefixed tokens, passwords and emails.\n- Find an address's start on a character boundary.\n- Name settings by label and explain every row.\n- Label conflict sides by branch and use Accept wording.\n- Size selects and fields to their content.\n- Let zoom and quit work while a dialog is open.\n- Read again when a crash report's reply is interrupted.\n- Keep the dialog open when git refuses a worktree.\n- Write dates in the calendar format chosen in Settings.\n- Ignore common words when searching settings.\n- Stop warning when a git setting is simply unset.\n- Keep every subtitle on one line and drop config paths.\n- Show a row's notes as a mark beside its title.\n- Offer a repository only the choices git leaves to it.\n- List the recommended choice first in every select.\n- Write the consent dates the way the documents do.\n- Say why Pull requests is unavailable.\n- Say plainly what the welcome dialog promises.",
+  "pub_date": "2026-10-13T00:43:43Z",
+  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1279",
   "platforms": {
-    "linux-aarch64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1200/canopy-build-1200-aarch64-unknown-linux-gnu.tar.gz",
-      "sha256": "250812dbb63760e4117d2ddf977590d39359014fb2cd01b118897fda057715af"
-    },
     "windows-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1200/canopy-build-1200-x86_64-pc-windows-msvc.zip",
-      "sha256": "7144dcf39aff597dc841e1af5bc6da9bee8cbe2b481be7fc644990e20abd0cbb"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1279/canopy-build-1279-x86_64-pc-windows-msvc.zip",
+      "sha256": "f525618a2b9e3c73996269f2ef93bf31cd4eeff018347449ae94969342c88880"
     },
     "linux-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1200/canopy-build-1200-x86_64-unknown-linux-gnu.tar.gz",
-      "sha256": "f34402dec780e5b92a2c093a5f88ebad16ad28e87c7f341b7125266f19c04c27"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1279/canopy-build-1279-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "7db7c2b6905f7173ce9f2e24b265b8647fff174b32ea7605466127bd27947d02"
     }
   }
 }
