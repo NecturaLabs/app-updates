@@ -1,20 +1,16 @@
 {
-  "version": "1648",
-  "notes": "### Added\n\n- The first public build of Canopy, now open source under MIT OR Apache-2.0: a fast, Linux-first\n  Git client for Linux, macOS and Windows.\n- History with a commit graph, search, blame and file history; staging by file, hunk or line;\n  commits, amends and stashes; branches, tags, remotes, worktrees and submodules; merge, rebase,\n  cherry-pick and revert, with three-way conflict resolution.\n- GitHub and GitLab (self-hosted included) pull and merge requests through your `gh` or `glab`\n  sign-in, with checks and reviews; Canopy stores no token.\n- Keyboard first: a command palette, a shortcut cheatsheet, vim motions and single-key actions.\n- Themes with high-contrast variants, interface zoom, reduced motion, and settings that show your\n  git configuration beside Canopy's recommendations.\n- In-app updates, opt-in crash reports, and no telemetry.",
-  "pub_date": "2026-11-18T04:43:51Z",
-  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1648",
+  "version": "1661",
+  "notes": "### Added\n\n- Remove merged branches the remote deleted after a fetch that prunes.\n\n### Fixed\n\n- A shallower branch tree without repeated icons and words.\n- No scroll bar beside an empty commit message body.\n- Show the whole folder in the Trust and New worktree dialogs.\n- One card for a notice that repeats while it shows.\n- Say how long a repository's tab name can be.\n- A glyph of its own for a possibly squash-merged branch.\n- An enter-arrow, not a tick, for Check out.\n- End the interrupted-update notices with a full stop.\n- A Fetch heading over the fetch rows, out of the git configuration list.",
+  "pub_date": "2026-11-18T08:11:05Z",
+  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1661",
   "platforms": {
-    "linux-aarch64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1648/canopy-build-1648-aarch64-unknown-linux-gnu.tar.gz",
-      "sha256": "062beb2d4169a6aa6b8fa0f44294b23de12ad96897d54aa77d3ed4d4a253cb9b"
-    },
     "windows-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1648/canopy-build-1648-x86_64-pc-windows-msvc.zip",
-      "sha256": "e71e9a9fdd6795cb68df8551045745dea623bc48089e97389b1ab92374173c87"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1661/canopy-build-1661-x86_64-pc-windows-msvc.zip",
+      "sha256": "46d22d05c192d39b410a7e4c07c958b0dbb86242ddf4cbb385173737cc5553a0"
     },
     "linux-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1648/canopy-build-1648-x86_64-unknown-linux-gnu.tar.gz",
-      "sha256": "17c64c1a970ed198cf1a8bcd48c74a5676d28761e740638b9eed19f954a4b967"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1661/canopy-build-1661-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "70d27793bc8cda915bdb712076de8baf3d84f8739640403e8206b043cf20c4e8"
     }
   }
 }
