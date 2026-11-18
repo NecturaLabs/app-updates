@@ -1,12 +1,20 @@
 {
   "version": "1683",
   "notes": "### Fixed\n\n- The trust-safety-off notice and the untrusted-repository banner can be dismissed.",
-  "pub_date": "2026-11-18T09:51:57Z",
+  "pub_date": "2026-11-18T09:52:28Z",
   "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1683",
   "platforms": {
     "darwin-aarch64": {
       "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1683/canopy-build-1683-aarch64-apple-darwin.tar.gz",
       "sha256": "cd339be6fd2f4e2680f4f722ab698b9eef0a5de51b67514ad9c64a8b6f616af2"
+    },
+    "linux-aarch64": {
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1683/canopy-build-1683-aarch64-unknown-linux-gnu.tar.gz",
+      "sha256": "17ef0a1845a79127ab7d12363fa7143d51b923b522cf8a798247763f083b1666"
+    },
+    "darwin-x86_64": {
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1683/canopy-build-1683-x86_64-apple-darwin.tar.gz",
+      "sha256": "f388eabaed30fd4a7abcb981bbefb30e8315c0a65090b756ea1854fdead2b4ef"
     },
     "windows-x86_64": {
       "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1683/canopy-build-1683-x86_64-pc-windows-msvc.zip",
