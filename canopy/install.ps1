@@ -31,8 +31,7 @@ param(
     [switch]$NoPath,
     # Remove Canopy: exactly what this script created. Settings and data stay.
     [switch]$Uninstall,
-    # With -Uninstall: also delete Canopy's settings, saved hosting tokens (tokens.json),
-    # logs and caches (asks first).
+    # With -Uninstall: also delete Canopy's settings, logs and caches (asks first).
     [switch]$Purge,
     # Do not ask for confirmation (for -Purge).
     [switch]$Yes,
@@ -74,25 +73,40 @@ param(
     # Canopy's user data, removed only by -Purge. Keep this list in step with the app (and with
     # packaging/install.sh); the contract is in packaging/README.md ("Canopy's data folders").
     #   vendor  a vendor-specific name: deleted when it is a folder.
-    #   eframe  the folder eframe::storage_dir("canopy") gives today: deleted only when it holds
-    #           .canopy-data or Canopy's own files (Test-EframeCanopy).
+    #   eframe  a generic name that may predate the marker (eframe::storage_dir("canopy")): deleted
+    #           only when it holds .canopy-data, or holds Canopy's own files and nothing else
+    #           (Test-EframeCanopy).
     function Get-PurgeTargets {
         @(
             @{ Kind = 'eframe'; Path = (Join-Path $env:APPDATA 'canopy\data') },
+            @{ Kind = 'vendor'; Path = (Join-Path $env:APPDATA 'io.necturalabs.Canopy') },
             @{ Kind = 'vendor'; Path = (Join-Path $env:APPDATA 'NecturaLabs\Canopy') },
             @{ Kind = 'vendor'; Path = (Join-Path $env:LOCALAPPDATA 'NecturaLabs\Canopy') }
         )
     }
 
     function Test-EframeCanopy([string]$Dir) {
-        if (Test-Path -LiteralPath (Join-Path $Dir 'tokens.json') -PathType Leaf) { return $true }
+        $found = $false
         $ron = Join-Path $Dir 'app.ron'
-        if ((Test-Path -LiteralPath $ron -PathType Leaf) -and (Select-String -LiteralPath $ron -SimpleMatch 'canopy-settings-v1' -Quiet)) { return $true }
+        if ((Test-Path -LiteralPath $ron -PathType Leaf) -and (Select-String -LiteralPath $ron -SimpleMatch 'canopy-settings-v1' -Quiet)) { $found = $true }
         foreach ($sub in @(@('logs', 'canopy-*.jsonl'), @('crashes', 'crash-*.txt'))) {
             $d = Join-Path $Dir $sub[0]
-            if ((Test-Path -LiteralPath $d -PathType Container) -and @(Get-ChildItem -LiteralPath $d -Filter $sub[1] -File -Force).Count -gt 0) { return $true }
+            if ((Test-Path -LiteralPath $d -PathType Container) -and @(Get-ChildItem -LiteralPath $d -Filter $sub[1] -File -Force).Count -gt 0) { $found = $true }
         }
-        return $false
+        if (-not $found) { return $false }
+        # Recognisable data is not enough: a stranger's file beside it keeps the folder.
+        foreach ($item in Get-ChildItem -LiteralPath $Dir -Force) {
+            if (-not (Test-CanopyName $item.Name)) { return $false }
+        }
+        return $true
+    }
+
+    # Whether $Name is exactly a name Canopy writes in its folders, never merely one that looks
+    # like it (a stranger's x.moving or settings.json.mine is not). The same list is in the app
+    # (is_canopy_name in crates/canopy-app/src/storage.rs) and in install.sh (is_canopy_name);
+    # change the three together.
+    function Test-CanopyName([string]$Name) {
+        $Name -cmatch '^(tokens\.json(\.tmp)?|settings\.json(\.bad|\.[0-9]+\.tmp)?|app\.ron(\.[0-9]+\.moving)?|logs|crashes|avatars|\.canopy-data|canopy-[0-9]{8}T[0-9]{6}Z-[0-9]+\.jsonl(\.[0-9]+\.moving)?)$'
     }
     # -------------------------------------------------------------------------------------------
 
@@ -119,8 +133,7 @@ Options:
                 to go back to an older build.
   -NoPath       Do not add the install folder to the user PATH.
   -Uninstall    Remove Canopy: exactly what this script created. Settings and data stay.
-  -Purge        With -Uninstall: also delete Canopy's settings, saved hosting tokens
-                (tokens.json), logs and caches (asks first).
+  -Purge        With -Uninstall: also delete Canopy's settings, logs and caches (asks first).
   -Yes          Do not ask for confirmation (for -Purge).
   -Help         Show this help.
 
@@ -348,13 +361,63 @@ installed build with an older one unless -Version asks for it.
         }
     }
 
-    # Takes the install lock, shared by install and uninstall; returns its path.
+    # The process id lock folder $Lock names in its pid file, or 0 when it names none.
+    function Get-LockOwner([string]$Lock) {
+        $pidFile = Join-Path $Lock 'pid'
+        if (-not (Test-Path -LiteralPath $pidFile -PathType Leaf)) { return 0 }
+        $text = (Get-Content -LiteralPath $pidFile -TotalCount 1 -ErrorAction SilentlyContinue)
+        $owner = 0
+        if (-not [int]::TryParse(([string]$text).Trim(), [ref]$owner) -or $owner -le 0) { return 0 }
+        return $owner
+    }
+
+    # Whether lock folder $Lock names, in its pid file, a process that certainly no longer exists:
+    # a run that was killed leaves the lock behind. A lock without a readable process id is never
+    # called stale.
+    function Test-StaleLock([string]$Lock) {
+        $owner = Get-LockOwner $Lock
+        if ($owner -le 0) { return $false }
+        return -not (Get-Process -Id $owner -ErrorAction SilentlyContinue)
+    }
+
+    # Takes the install lock, shared by install and uninstall, records this process in it and
+    # returns its path. The lock of a killed run is taken over (see Test-StaleLock), and the
+    # leftovers of a takeover that was killed are removed.
     function Lock-Install([string]$Root) {
         $lock = Join-Path $Root '.lock'
         try {
             [void](New-Item -ItemType Directory -Path $lock -ErrorAction Stop)
         } catch {
-            Fail "another Canopy install or uninstall is running (remove $lock if it is not)"
+            if (-not (Test-StaleLock $lock)) {
+                Fail "another Canopy install or uninstall is running, or was killed (remove $lock if it is not running)"
+            }
+            $dead = Get-LockOwner $lock
+            # Moving is atomic, so of several runs finding the same dead lock only one gets it; it
+            # must still be the dead one's, else it was a live run's lock and goes back.
+            $stale = "$lock.stale.$PID"
+            try {
+                Move-Item -LiteralPath $lock -Destination $stale -ErrorAction Stop
+            } catch {
+                Fail "another Canopy install or uninstall is running (remove $lock if it is not)"
+            }
+            if ((Get-LockOwner $stale) -ne $dead) {
+                try { Move-Item -LiteralPath $stale -Destination $lock -ErrorAction Stop } catch { }
+                Fail "another Canopy install or uninstall is running (remove $lock if it is not)"
+            }
+            Remove-Item -LiteralPath $stale -Recurse -Force -ErrorAction SilentlyContinue
+            try {
+                [void](New-Item -ItemType Directory -Path $lock -ErrorAction Stop)
+            } catch {
+                Fail "another Canopy install or uninstall is running (remove $lock if it is not)"
+            }
+        }
+        Set-Content -LiteralPath (Join-Path $lock 'pid') -Value $PID -ErrorAction SilentlyContinue
+        # What a killed takeover left aside: a dead holder's lock that nothing needs. One that
+        # names no process, or a running one, is left (another run may be in its takeover).
+        foreach ($aside in @(Get-ChildItem -LiteralPath $Root -Directory -Filter '.lock.stale.*' -Force -ErrorAction SilentlyContinue)) {
+            if (Test-StaleLock $aside.FullName) {
+                Remove-Item -LiteralPath $aside.FullName -Recurse -Force -ErrorAction SilentlyContinue
+            }
         }
         return $lock
     }
@@ -391,11 +454,29 @@ installed build with an older one unless -Version asks for it.
             Say 'No Canopy settings or data found to purge.'
             return $false
         }
-        Say "-Purge deletes Canopy's settings, saved hosting tokens (tokens.json), logs and caches:"
+        Say "-Purge deletes Canopy's settings, logs and caches:"
         foreach ($d in $delete) { Say "  $d" }
         if (Confirm-Action 'Delete them?') { return $true }
         Say 'Keeping them.'
         return $false
+    }
+
+    # Deletes folder $Path and everything in it without ever entering a link, as `rm -rf` does:
+    # Windows PowerShell 5.1's Remove-Item -Recurse can follow a junction or symlink (logs or
+    # avatars may be one) and delete its target's files. A link is removed alone, a real folder is
+    # emptied first and then removed.
+    function Remove-TreeNoFollow([string]$Path) {
+        foreach ($child in @(Get-ChildItem -LiteralPath $Path -Force)) {
+            if ($child.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                if ($child.PSIsContainer) { [System.IO.Directory]::Delete($child.FullName, $false) }
+                else { [System.IO.File]::Delete($child.FullName) }
+            } elseif ($child.PSIsContainer) {
+                Remove-TreeNoFollow $child.FullName
+            } else {
+                Remove-Item -LiteralPath $child.FullName -Force
+            }
+        }
+        Remove-Item -LiteralPath $Path -Force
     }
 
     function Invoke-Purge([bool]$Confirmed) {
@@ -403,7 +484,7 @@ installed build with an older one unless -Version asks for it.
             foreach ($t in Get-PurgeTargets) {
                 # Checked again: only what was listed and still qualifies goes.
                 if ((Get-PurgeVerdict $t) -eq 'delete') {
-                    Remove-Item -LiteralPath $t.Path -Recurse -Force
+                    Remove-TreeNoFollow $t.Path
                     Say "  removed $($t.Path)"
                 }
             }
@@ -414,9 +495,6 @@ installed build with an older one unless -Version asks for it.
                 }
             }
         }
-        Say ''
-        Say "Tokens saved in Settings -> Accounts stay in Windows Credential Manager (service"
-        Say "`"$AppId`"): remove them in Canopy before uninstalling, or in Credential Manager."
     }
 
     function Invoke-Uninstall([string]$Root) {
@@ -452,7 +530,7 @@ installed build with an older one unless -Version asks for it.
                 Get-ChildItem -LiteralPath $Root -Force | Where-Object { $_.Name -like '.staging.*' -or $_.Name -like '.previous.*' } |
                     ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force }
             } finally {
-                Remove-Item -LiteralPath $lock -Force -ErrorAction SilentlyContinue
+                Remove-Item -LiteralPath $lock -Recurse -Force -ErrorAction SilentlyContinue
             }
             $left = @(Get-ChildItem -LiteralPath $Root -Force)
             if ($left.Count -eq 0) {
@@ -750,7 +828,7 @@ installed build with an older one unless -Version asks for it.
                 }
             }
             Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
-            if ($lock) { Remove-Item -LiteralPath $lock -Force -ErrorAction SilentlyContinue }
+            if ($lock) { Remove-Item -LiteralPath $lock -Recurse -Force -ErrorAction SilentlyContinue }
             if (-not $succeeded) {
                 foreach ($d in $createdDirs) {
                     if ((Test-Path -LiteralPath $d -PathType Container) -and -not (Get-ChildItem -LiteralPath $d -Force)) {

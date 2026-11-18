@@ -37,14 +37,16 @@ MIN_GLIBC=2.35
 # packaging/install.ps1); the contract is in packaging/README.md ("Canopy's data folders").
 # One "<kind> <path>" line per folder:
 #   vendor  a vendor-specific name: deleted when it is a folder.
-#   eframe  the folder eframe::storage_dir("canopy") gives today: deleted only when it holds
-#           .canopy-data or Canopy's own files (is_eframe_canopy).
+#   eframe  a generic name that may predate the marker (eframe::storage_dir("canopy"), which is also
+#           Linux's data folder): deleted only when it holds .canopy-data, or holds Canopy's own
+#           files and nothing else (is_eframe_canopy).
 #   marker  a generic name: deleted only when it holds the .canopy-data marker file.
 purge_targets() {
     case $OS in
         linux)
             printf '%s\n' \
                 "eframe $(xdg_home "${XDG_DATA_HOME:-}" "$HOME/.local/share")/canopy" \
+                "vendor $(xdg_home "${XDG_DATA_HOME:-}" "$HOME/.local/share")/io.necturalabs.canopy" \
                 "marker $(xdg_home "${XDG_CONFIG_HOME:-}" "$HOME/.config")/canopy" \
                 "marker $(xdg_home "${XDG_STATE_HOME:-}" "$HOME/.local/state")/canopy" \
                 "marker $(xdg_home "${XDG_CACHE_HOME:-}" "$HOME/.cache")/canopy"
@@ -59,15 +61,64 @@ purge_targets() {
     esac
 }
 
-# Whether eframe folder $1 is recognisably Canopy's: its settings key, saved tokens, or logs and
-# crash reports named the way Canopy names them.
-is_eframe_canopy() {
-    [ -f "$1/tokens.json" ] && return 0
-    if [ -f "$1/app.ron" ] && grep -q 'canopy-settings-v1' "$1/app.ron" 2>/dev/null; then return 0; fi
-    for f in "$1"/logs/canopy-*.jsonl "$1"/crashes/crash-*.txt; do
-        if [ -f "$f" ]; then return 0; fi
-    done
+# Whether $1 is all digits (a process id).
+is_digits() {
+    case $1 in '' | *[!0-9]*) return 1 ;; esac
+    return 0
+}
+
+# Whether $1 is a run log's name, canopy-<UTC start>-<pid>.jsonl.
+is_run_log_name() {
+    case $1 in canopy-*.jsonl) ;; *) return 1 ;; esac
+    rest=${1#canopy-}
+    rest=${rest%.jsonl}
+    case ${rest%-*} in
+        [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]T[0-9][0-9][0-9][0-9][0-9][0-9]Z) ;;
+        *) return 1 ;;
+    esac
+    is_digits "${rest##*-}"
+}
+
+# Whether $1 is exactly a name Canopy writes in its folders, never merely one that looks like it
+# (a stranger's x.moving or settings.json.mine is not). The same list is in the app
+# (is_canopy_name in crates/canopy-app/src/storage.rs) and in install.ps1 (Test-CanopyName);
+# change the three together.
+is_canopy_name() {
+    case $1 in
+        tokens.json | tokens.json.tmp | settings.json | settings.json.bad | app.ron | logs | crashes | avatars | .canopy-data) return 0 ;;
+        settings.json.*.tmp)
+            rest=${1#settings.json.}
+            is_digits "${rest%.tmp}"
+            return ;;
+        app.ron.*.moving)
+            rest=${1#app.ron.}
+            is_digits "${rest%.moving}"
+            return ;;
+        canopy-*.jsonl) is_run_log_name "$1"; return ;;
+        canopy-*.jsonl.*.moving)
+            rest=${1%.moving}
+            is_digits "${rest##*.}" && is_run_log_name "${rest%.*}"
+            return ;;
+    esac
     return 1
+}
+
+# Whether eframe folder $1 is Canopy's alone: it holds recognisable Canopy data (its settings key,
+# or logs and crash reports named the way Canopy names them) and every entry in it is a name
+# Canopy itself writes (an old tokens.json, which the app deletes, included), so a stranger's file
+# beside them keeps the folder.
+is_eframe_canopy() {
+    found=1
+    if [ -f "$1/app.ron" ] && grep -q 'canopy-settings-v1' "$1/app.ron" 2>/dev/null; then found=0; fi
+    for f in "$1"/logs/canopy-*.jsonl "$1"/crashes/crash-*.txt; do
+        if [ -f "$f" ]; then found=0; fi
+    done
+    [ "$found" = 0 ] || return 1
+    for f in "$1"/* "$1"/.[!.]* "$1"/..?*; do
+        if [ ! -e "$f" ] && [ ! -L "$f" ]; then continue; fi
+        is_canopy_name "${f##*/}" || return 1
+    done
+    return 0
 }
 # ---------------------------------------------------------------------------------------------
 
@@ -397,10 +448,52 @@ git_report() {
     fi
 }
 
-# Takes the install lock, folder $1, shared by install and uninstall.
+# True when lock folder $1 names, in its pid file, a process that certainly no longer exists: a
+# run that was killed leaves the lock behind. Only Linux can say so (/proc lists every process);
+# a lock without a readable process id, or on another system, is never called stale.
+lock_is_stale() {
+    [ -d /proc/self ] || return 1
+    lock_pid=$(cat -- "$1/pid" 2>/dev/null) || return 1
+    case $lock_pid in
+        '' | *[!0-9]*) return 1 ;;
+    esac
+    [ "$lock_pid" -gt 0 ] && [ ! -e "/proc/$lock_pid" ]
+}
+
+# Takes the install lock, folder $1, shared by install and uninstall, and records this process in
+# it. The lock of a killed run is taken over (see lock_is_stale), and the leftovers of a takeover
+# that was killed are removed.
 take_lock() {
-    mkdir "$1" 2>/dev/null || die "another Canopy install or uninstall is running (remove $1 if it is not)"
+    if ! mkdir "$1" 2>/dev/null; then
+        lock_is_stale "$1" || die "another Canopy install or uninstall is running, or was killed (remove $1 if it is not running)"
+        # Renaming is atomic, so of several runs finding the same dead lock only one gets it; it
+        # must still be the dead one's, else it was a live run's lock and goes back.
+        stale=$1.stale.$$
+        mv -- "$1" "$stale" 2>/dev/null || die "another Canopy install or uninstall is running (remove $1 if it is not)"
+        if [ "$(cat -- "$stale/pid" 2>/dev/null)" != "$lock_pid" ]; then
+            mv -- "$stale" "$1" 2>/dev/null || true
+            die "another Canopy install or uninstall is running (remove $1 if it is not)"
+        fi
+        rm -rf -- "$stale"
+        mkdir "$1" 2>/dev/null || die "another Canopy install or uninstall is running (remove $1 if it is not)"
+    fi
     LOCK=$1
+    printf '%s\n' "$$" >"$LOCK/pid" || die "could not write $LOCK/pid"
+    # What a killed takeover left aside (above): a dead holder's lock that nothing needs, and that
+    # would keep rmdir from removing the install folder. One that names no process, or a running
+    # one, is left (another run may be in the middle of its takeover).
+    for aside in "$1".stale.*; do
+        if [ -d "$aside" ] && lock_is_stale "$aside"; then rm -rf -- "$aside"; fi
+    done
+}
+
+# Releases the lock taken by take_lock.
+release_lock() {
+    if [ -n "$LOCK" ]; then
+        rm -f -- "$LOCK/pid"
+        rmdir -- "$LOCK" 2>/dev/null || true
+    fi
+    LOCK=
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -479,8 +572,7 @@ uninstall_linux() {
     for e in "$ROOT"/.staging.* "$ROOT"/.previous.*; do
         if [ -e "$e" ] || [ -L "$e" ]; then rm -rf -- "$e"; fi
     done
-    rmdir -- "$LOCK" 2>/dev/null || true
-    LOCK=
+    release_lock
     if rmdir -- "$ROOT" 2>/dev/null; then
         say "  removed $ROOT"
     else
@@ -577,9 +669,6 @@ purge() {
             esac
         done
     fi
-    say ""
-    say "Tokens saved in Settings -> Accounts live in tokens.json in Canopy's data folder, so a"
-    say "folder removed above took them with it; Canopy does not use the system keychain yet."
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -599,7 +688,7 @@ cleanup() {
         fi
     fi
     if [ -n "$WORK" ]; then rm -rf -- "$WORK"; fi
-    if [ -n "$LOCK" ]; then rmdir -- "$LOCK" 2>/dev/null || true; fi
+    release_lock
     remove_created_dirs
     return 0
 }
@@ -830,8 +919,9 @@ integrate_linux() {
             warn "could not write $entry"
         fi
     fi
-    # Earlier builds also shipped a scalable SVG: remove each copy the old receipt lists, wherever
-    # it was registered. One that cannot be removed stays in the receipt, to be tried again.
+    # Earlier builds also shipped a scalable SVG: remove each copy the old receipt lists whose
+    # current bytes are one of those icons, never an edited copy. One that cannot be removed stays
+    # in the receipt, to be tried again.
     if [ -f "$receipt" ]; then
         grep '^icon=' "$receipt" | grep -F "/icons/hicolor/scalable/apps/$APP_ID.svg|" |
             while IFS= read -r line; do
@@ -839,9 +929,15 @@ integrate_linux() {
                 dst=${pair%%|*}
                 src=${pair#*|}
                 icon_entry_ok "$dst" "$src" || continue
-                if [ -f "$dst" ] && [ ! -L "$dst" ] && ! rm -f -- "$dst" 2>/dev/null; then
-                    warn "could not remove $dst"
-                    printf 'icon=%s|%s\n' "$dst" "$src" >>"$tmp_receipt"
+                if [ -f "$dst" ] && [ ! -L "$dst" ]; then
+                    case " $LEGACY_SVG_SHA256 " in
+                        *" $(sha256_of "$dst") "*)
+                            if ! rm -f -- "$dst" 2>/dev/null; then
+                                warn "could not remove $dst"
+                                printf 'icon=%s|%s\n' "$dst" "$src" >>"$tmp_receipt"
+                            fi
+                            ;;
+                    esac
                 fi
             done
     fi
