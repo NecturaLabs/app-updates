@@ -1,9 +1,13 @@
 {
   "version": "1661",
   "notes": "### Added\n\n- Remove merged branches the remote deleted after a fetch that prunes.\n\n### Fixed\n\n- A shallower branch tree without repeated icons and words.\n- No scroll bar beside an empty commit message body.\n- Show the whole folder in the Trust and New worktree dialogs.\n- One card for a notice that repeats while it shows.\n- Say how long a repository's tab name can be.\n- A glyph of its own for a possibly squash-merged branch.\n- An enter-arrow, not a tick, for Check out.\n- End the interrupted-update notices with a full stop.\n- A Fetch heading over the fetch rows, out of the git configuration list.",
-  "pub_date": "2026-11-18T08:11:05Z",
+  "pub_date": "2026-11-18T08:11:21Z",
   "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1661",
   "platforms": {
+    "linux-aarch64": {
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1661/canopy-build-1661-aarch64-unknown-linux-gnu.tar.gz",
+      "sha256": "57cdcfcd023aca6b2b5235a84e187ea4241067eed500e1abb8a952a2d4f399d9"
+    },
     "windows-x86_64": {
       "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1661/canopy-build-1661-x86_64-pc-windows-msvc.zip",
       "sha256": "46d22d05c192d39b410a7e4c07c958b0dbb86242ddf4cbb385173737cc5553a0"
