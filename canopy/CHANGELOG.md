@@ -3,6 +3,13 @@
 The notes of every Canopy build, newest first. Only the current builds keep a release; this file
 keeps the notes of the ones that were removed.
 
+<!-- release: canopy-build-1683 2026-11-18T09:51:56Z -->
+## Canopy build 1683 (18 November 2026)
+
+### Fixed
+
+- The trust-safety-off notice and the untrusted-repository banner can be dismissed.
+
 <!-- release: canopy-build-1661 2026-11-18T08:11:04Z -->
 ## Canopy build 1661 (18 November 2026)
 
