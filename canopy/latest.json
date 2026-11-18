@@ -1,20 +1,20 @@
 {
-  "version": "1661",
-  "notes": "### Added\n\n- Remove merged branches the remote deleted after a fetch that prunes.\n\n### Fixed\n\n- A shallower branch tree without repeated icons and words.\n- No scroll bar beside an empty commit message body.\n- Show the whole folder in the Trust and New worktree dialogs.\n- One card for a notice that repeats while it shows.\n- Say how long a repository's tab name can be.\n- A glyph of its own for a possibly squash-merged branch.\n- An enter-arrow, not a tick, for Check out.\n- End the interrupted-update notices with a full stop.\n- A Fetch heading over the fetch rows, out of the git configuration list.",
-  "pub_date": "2026-11-18T08:11:21Z",
-  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1661",
+  "version": "1683",
+  "notes": "### Fixed\n\n- The trust-safety-off notice and the untrusted-repository banner can be dismissed.",
+  "pub_date": "2026-11-18T09:51:57Z",
+  "release_page": "https://github.com/NecturaLabs/app-updates/releases/tag/canopy-build-1683",
   "platforms": {
-    "linux-aarch64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1661/canopy-build-1661-aarch64-unknown-linux-gnu.tar.gz",
-      "sha256": "57cdcfcd023aca6b2b5235a84e187ea4241067eed500e1abb8a952a2d4f399d9"
+    "darwin-aarch64": {
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1683/canopy-build-1683-aarch64-apple-darwin.tar.gz",
+      "sha256": "cd339be6fd2f4e2680f4f722ab698b9eef0a5de51b67514ad9c64a8b6f616af2"
     },
     "windows-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1661/canopy-build-1661-x86_64-pc-windows-msvc.zip",
-      "sha256": "46d22d05c192d39b410a7e4c07c958b0dbb86242ddf4cbb385173737cc5553a0"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1683/canopy-build-1683-x86_64-pc-windows-msvc.zip",
+      "sha256": "6f9c5b1601be96e79b24671f34dff32067cbdbba1eda7d480b2f7444fef4eb0e"
     },
     "linux-x86_64": {
-      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1661/canopy-build-1661-x86_64-unknown-linux-gnu.tar.gz",
-      "sha256": "70d27793bc8cda915bdb712076de8baf3d84f8739640403e8206b043cf20c4e8"
+      "url": "https://github.com/NecturaLabs/app-updates/releases/download/canopy-build-1683/canopy-build-1683-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "93367bb0a3a49ee068905f9d8a5f17fe1574ce6aef61291939c298f74b57f7a5"
     }
   }
 }
