@@ -27,6 +27,9 @@ param(
     [switch]$Beta,
     # Install this build number (for example 412) instead of the newest one.
     [string]$Version = '',
+    # With -Version: the archive's SHA-256, used instead of the feed's (Canopy's updater passes
+    # the one from its signed update manifest).
+    [string]$Sha256 = '',
     # Do not add the install folder to the user PATH.
     [switch]$NoPath,
     # Remove Canopy: exactly what this script created. Settings and data stay.
@@ -131,6 +134,8 @@ Options:
   -Beta         Install the newest build, including beta builds (the beta channel).
   -Version N    Install build N (for example 412) instead of the newest one; also the way
                 to go back to an older build.
+  -Sha256 HEX   With -Version: the archive's SHA-256, used instead of the feed's (Canopy's
+                updater passes the one from its signed update manifest).
   -NoPath       Do not add the install folder to the user PATH.
   -Uninstall    Remove Canopy: exactly what this script created. Settings and data stay.
   -Purge        With -Uninstall: also delete Canopy's settings, logs and caches (asks first).
@@ -641,52 +646,64 @@ installed build with an older one unless -Version asks for it.
             # Which release.
             $pin = $Version.Trim()
             if ($pin -and -not (Test-Build $pin)) { Fail "-Version $pin is not a build number like 412" }
-            Say 'Reading the update manifest'
-            $use = Get-Channel 'latest' $work
-            if ($Beta -or $pin) {
-                $betaManifest = Get-Channel 'beta' $work
-                if ($betaManifest) {
-                    if ($pin) {
-                        if ($betaManifest.version -eq $pin) { $use = $betaManifest }
-                    } elseif (([long][string]$betaManifest.version) -gt ([long][string]$use.version)) {
-                        $use = $betaManifest
-                    }
-                }
-            }
-            if (-not $pin -or $pin -eq $use.version) {
-                $ver = [string]$use.version
-                # Never a silent downgrade: an older version only when -Version asks for it.
-                if (-not $pin -and (Test-Build $oldVersion) -and ([long]$oldVersion -gt [long]$ver)) {
-                    $channel = if ($Beta) { 'beta' } else { 'stable' }
-                    Fail ("Canopy build $oldVersion is installed, which is newer than build $ver, the newest on the $channel channel; nothing was changed.`n" +
-                        "  To keep getting beta builds, run the installer with -Beta.`n" +
-                        "  To install build $ver anyway, run it with -Version $ver.")
-                }
-                $p = Get-Platform $use $key
-                if ($null -eq $p) {
-                    $keys = @()
-                    if ($use.PSObject.Properties['platforms'] -and $use.platforms) { $keys = @($use.platforms.PSObject.Properties | ForEach-Object { $_.Name }) }
-                    $list = if ($keys.Count) { $keys -join ', ' } else { 'none' }
-                    Fail "Canopy build $ver has no archive for Windows ($key) yet. Archives in this build: $list"
-                }
-                $url = [string]$p.url
-                $sha = [string]$p.sha256
-                $asset = $url.Substring($url.LastIndexOf('/') + 1)
-            } else {
+            $expectSha = $Sha256.Trim()
+            if ($expectSha) {
+                if (-not $pin) { Fail "-Sha256 goes with -Version" }
+                if ($expectSha -cnotmatch '^[0-9a-f]{64}\z') { Fail "-Sha256 needs 64 lowercase hex digits" }
+                # A checksum from Canopy's signed manifest: the feed's manifests and checksum list
+                # are not read at all.
                 $ver = $pin
                 $asset = "canopy-build-$ver-$target.zip"
-                Say "Reading the checksums of Canopy build $ver"
-                $sums = Join-Path $work 'SHA256SUMS'
-                try { Get-File "$ReleasesUrl/canopy-build-$ver/SHA256SUMS" $sums } catch [System.ApplicationException] { throw } catch {
-                    Fail "Canopy build $ver is not published (no $ReleasesUrl/canopy-build-$ver/SHA256SUMS)"
-                }
-                $sha = ''
-                foreach ($line in Get-Content -LiteralPath $sums) {
-                    $parts = $line -split '\s+', 2
-                    if ($parts.Count -eq 2 -and $parts[1].TrimStart('*') -eq $asset) { $sha = $parts[0]; break }
-                }
-                if (-not $sha) { Fail "Canopy build $ver has no archive for Windows ($key)" }
                 $url = "$ReleasesUrl/canopy-build-$ver/$asset"
+                $sha = $expectSha
+            } else {
+                Say 'Reading the update manifest'
+                $use = Get-Channel 'latest' $work
+                if ($Beta -or $pin) {
+                    $betaManifest = Get-Channel 'beta' $work
+                    if ($betaManifest) {
+                        if ($pin) {
+                            if ($betaManifest.version -eq $pin) { $use = $betaManifest }
+                        } elseif (([long][string]$betaManifest.version) -gt ([long][string]$use.version)) {
+                            $use = $betaManifest
+                        }
+                    }
+                }
+                if (-not $pin -or $pin -eq $use.version) {
+                    $ver = [string]$use.version
+                    # Never a silent downgrade: an older version only when -Version asks for it.
+                    if (-not $pin -and (Test-Build $oldVersion) -and ([long]$oldVersion -gt [long]$ver)) {
+                        $channel = if ($Beta) { 'beta' } else { 'stable' }
+                        Fail ("Canopy build $oldVersion is installed, which is newer than build $ver, the newest on the $channel channel; nothing was changed.`n" +
+                            "  To keep getting beta builds, run the installer with -Beta.`n" +
+                            "  To install build $ver anyway, run it with -Version $ver.")
+                    }
+                    $p = Get-Platform $use $key
+                    if ($null -eq $p) {
+                        $keys = @()
+                        if ($use.PSObject.Properties['platforms'] -and $use.platforms) { $keys = @($use.platforms.PSObject.Properties | ForEach-Object { $_.Name }) }
+                        $list = if ($keys.Count) { $keys -join ', ' } else { 'none' }
+                        Fail "Canopy build $ver has no archive for Windows ($key) yet. Archives in this build: $list"
+                    }
+                    $url = [string]$p.url
+                    $sha = [string]$p.sha256
+                    $asset = $url.Substring($url.LastIndexOf('/') + 1)
+                } else {
+                    $ver = $pin
+                    $asset = "canopy-build-$ver-$target.zip"
+                    Say "Reading the checksums of Canopy build $ver"
+                    $sums = Join-Path $work 'SHA256SUMS'
+                    try { Get-File "$ReleasesUrl/canopy-build-$ver/SHA256SUMS" $sums } catch [System.ApplicationException] { throw } catch {
+                        Fail "Canopy build $ver is not published (no $ReleasesUrl/canopy-build-$ver/SHA256SUMS)"
+                    }
+                    $sha = ''
+                    foreach ($line in Get-Content -LiteralPath $sums) {
+                        $parts = $line -split '\s+', 2
+                        if ($parts.Count -eq 2 -and $parts[1].TrimStart('*') -eq $asset) { $sha = $parts[0]; break }
+                    }
+                    if (-not $sha) { Fail "Canopy build $ver has no archive for Windows ($key)" }
+                    $url = "$ReleasesUrl/canopy-build-$ver/$asset"
+                }
             }
             # Only ever download Canopy's own archive from Canopy's own release in the feed repository.
             if ($url -cne "$ReleasesUrl/canopy-build-$ver/$asset") { Fail "the manifest points outside Canopy's releases: $url" }

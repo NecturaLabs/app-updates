@@ -134,6 +134,8 @@ Options:
   --beta           Install the newest build, including beta builds (the beta channel).
   --version N      Install build N (for example 412) instead of the newest one; also the
                    way to go back to an older build.
+  --sha256 HEX     With --version: the archive's SHA-256, used instead of the feed's (Canopy's
+                   updater passes the one from its signed update manifest).
   --no-path        Do not create the ~/.local/bin/canopy symlink.
   --uninstall      Remove Canopy: exactly the files this script created. Settings and data stay.
   --purge          With --uninstall: also delete Canopy's settings, logs and caches (asks first).
@@ -700,6 +702,15 @@ resolve_release() {
         valid_build "$PIN" || die "--version $PIN is not a build number like 412"
         VERSION=$PIN
     fi
+    if [ -n "$EXPECT_SHA" ]; then
+        # A checksum from Canopy's signed manifest: the feed's manifests and checksum list are
+        # not read at all.
+        [ -n "$PIN" ] || die "--sha256 goes with --version"
+        ASSET=canopy-build-$VERSION-$TARGET.$ext
+        ASSET_URL=$RELEASES_URL/canopy-build-$VERSION/$ASSET
+        ASSET_SHA=$EXPECT_SHA
+        return 0
+    fi
     say "Reading the update manifest"
     read_channel latest
     VERSION_LATEST=$(json_get "$WORK/latest.flat" version)
@@ -1125,6 +1136,7 @@ main() {
     MODE=install
     CHANNEL=latest
     PIN=
+    EXPECT_SHA=
     LINK=1
     PURGE=0
     YES=0
@@ -1160,6 +1172,12 @@ main() {
                 shift
                 ;;
             --version=*) PIN=${1#--version=} ;;
+            --sha256)
+                [ $# -ge 2 ] || die "--sha256 needs a value"
+                EXPECT_SHA=$2
+                shift
+                ;;
+            --sha256=*) EXPECT_SHA=${1#--sha256=} ;;
             --no-path) LINK=0 ;;
             --uninstall) MODE=uninstall ;;
             --purge) PURGE=1 ;;
@@ -1177,6 +1195,12 @@ main() {
     done
     if [ "$PURGE" = 1 ] && [ "$MODE" != uninstall ]; then
         die "--purge only goes with --uninstall"
+    fi
+    if [ -n "$EXPECT_SHA" ]; then
+        case $EXPECT_SHA in
+            *[!0-9a-f]*) die "--sha256 needs 64 lowercase hex digits" ;;
+        esac
+        [ ${#EXPECT_SHA} -eq 64 ] || die "--sha256 needs 64 lowercase hex digits"
     fi
     PIN=${PIN#v}
 
