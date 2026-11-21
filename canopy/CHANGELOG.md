@@ -3,6 +3,108 @@
 The notes of every Canopy build, newest first. Only the current builds keep a release; this file
 keeps the notes of the ones that were removed.
 
+<!-- release: canopy-build-1996 2026-11-21T01:11:48Z -->
+## Canopy build 1996 (21 November 2026)
+
+### Added
+
+- Only trust update manifests signed by the release key.
+- Credit outside contributors in the release notes.
+- Say what to do when a force push finds the remote changed.
+- Add Stage file to an unstaged file's diff header.
+- Colour the code by language, as the diff does.
+
+### Fixed
+
+- Run only the installer and archive the signed manifest names.
+- Find a deleted worktree however its folder is spelled.
+- Run a planned search at the instant it is due.
+- Keep Git for Windows' shell from expanding wildcards in a path.
+- Stop the ignore preview hanging on many long paths.
+- A force push no longer overwrites commits you never saw.
+- Let visitors pause the palette tour.
+- Never let git act on input that was cut short.
+- Filter GitLab drafts with draft on GitLab 19 and newer.
+- Pin the force push to the remote's own tracking branch.
+- Keep focus when the tour button hides.
+- Send GitLab's draft filter as a boolean.
+- Move focus to the first section link when the button hides.
+- Say how to track a branch before a force push.
+- Say the force push tip is from your last fetch.
+- Skip GitLab's version read without a sign-in.
+- Show badge links and titles without hidden characters.
+- Expose the cause of a missing git through source().
+- Capture a chord by pressing its modifiers and key.
+- Say Canopy's own code is MIT or Apache-2.0 in the notices.
+- Read GitLab's major version without copying the answer.
+- Fade the tour button in with the palette.
+- Keep the privacy links on one row and the footer links on one line.
+- Keep the icon out of the palette's section labels.
+- Show blank characters as spaces and clean every host name.
+- Drop ignored shortcuts and say how many an import ignored.
+- Stop a stale force push with a Fetch button and plainer copy.
+- Warn when an import ignored shortcuts.
+- Say a stopped force push may mean the branch was deleted.
+- Refuse a key pressed while Super is held in a capture.
+- Name the palette tour button for what it does next.
+- Say plainly what a force push replaces.
+- Call a captured key combination a shortcut.
+- Keep the status bar whole with a long branch name.
+- Keep the commit message beside long ref pills in History.
+- Keep a path's last folder in view.
+- Never cut a commit's ids in narrow commit details.
+- Show File history's commit messages whole.
+- Offer git-flow setup from Start and Finish.
+- Centre one-line settings titles on their controls.
+- Put every settings heading the same distance below its rows.
+- Give every notification row the same height.
+- Give Clean up stale the same compact rows as Clean up merged.
+- Keep a request's "updated" time whole when its line wraps.
+- Line up sidebar folders and branches at each level.
+- Show that the command palette's list goes on.
+- Keep the diff header on one row when it fits.
+- Drop "without consent" from Export settings.
+- Give callouts the full width of their form.
+- Say why a branch name is refused.
+- Explain Repository insights' counts plainly and date them like the app.
+- Say a reason every merged branch shares only once.
+- Explain Forget missing worktrees without git's file names.
+- Mark the crash question's facts in the accent.
+- Give a settings row one help mark.
+- Leave Merge… the only filled button on an open request.
+- Label every theme card Dark or Light.
+- Move the toolbar tools that do not fit into a More menu.
+- Keep each toolbar tool's focus its own as tools move into More.
+- Tie the diff header's Stage and Unstage buttons to their file.
+- Stop the diff header redrawing when its controls wrap alone.
+- Drop a blame's colours when its lines change.
+- Name no count when no missing worktree is found.
+- Say submodule loss only for a worktree that has submodules.
+- Say forgetting loses unpushed submodule commits and a worktree's own refs.
+- Say a forget confirmation is gone once its tab closed.
+- Open the force-delete question on Cancel.
+- Say what force deleting a branch compares and how to get it back.
+- Say when HEAD's reflog keeps a force-deleted branch's tip.
+- Keep the conflict notice off the resolver's Save buttons.
+- Offer a forced delete from the branch's state, not git's words.
+- Show the rest of git's error, a few lines at most.
+- Shorter identity hint, and say the tooltip is capped.
+- Count commits a missing worktree's own refs hold.
+- Flatten reference badges and addresses with parentheses.
+- Say why a key was refused and keep the buttons in place.
+- Keep colour fades under reduced motion, stop only movement.
+- Say what git decides when it sets only one autostash key.
+- Show branch names without characters that reorder text.
+- Say what removing a worktree loses in Forget's words.
+- Open repositories with ref names too long for libgit2.
+- Count commits a worktree's own refs hold on removal.
+- Refuse a removal when a worktree's own refs moved.
+
+### Changed
+
+- Bump rfd from 0.17.2 to 0.18.0 in the cargo group.
+- Regenerate the third-party notices for rfd 0.18.
+
 <!-- release: canopy-build-1683 2026-11-18T09:51:56Z -->
 ## Canopy build 1683 (18 November 2026)
 
